@@ -163,10 +163,10 @@ button{font-family:inherit}
   text-shadow:0 2px 0 rgba(0,0,0,.35);font-weight:900}
 #wave{font-size:30px;letter-spacing:2px}
 #timer{display:block;font-size:16px;opacity:.95}
-#scorebox{position:absolute;top:14px;right:18px;text-align:right;color:#fff;font-weight:900;
+#scorebox{position:absolute;top:48px;left:16px;text-align:left;color:#fff;font-weight:900;
   text-shadow:0 2px 0 rgba(0,0,0,.35)}
-#scorebox em{display:block;font-style:normal;font-size:14px;letter-spacing:3px}
-#score{font-size:34px}
+#scorebox em{display:inline;font-style:normal;font-size:13px;letter-spacing:1px;margin-right:8px}
+#score{font-size:26px;vertical-align:-2px}
 #buffs{position:absolute;top:84px;right:18px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 .buff{background:rgba(255,255,255,.9);color:#4a3622;font-weight:900;font-size:13px;
   padding:4px 10px;border-radius:20px;border:2px solid #5b4632}

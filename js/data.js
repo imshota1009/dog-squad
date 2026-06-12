@@ -10,11 +10,12 @@ const GRAV=30;
 
 /* ---------- difficulty ---------- */
 const DIFFS={
-  easy:  {label:"やさしい", desc:"はじめての おさんぽ気分",       cnt:.75, spd:.85, hp:12, acorn:1.3, coin:.7 },
-  normal:{label:"ふつう",   desc:"歯ごたえバッチリの防衛戦",      cnt:1,   spd:1,   hp:10, acorn:1,   coin:1  },
-  hard:  {label:"むずかしい",desc:"リスの本気。生半可じゃ守れない", cnt:1.35,spd:1.18,hp:8,  acorn:.72, coin:1.5}
+  easy:  {label:"やさしい", desc:"はじめての おさんぽ気分",       cnt:.75, spd:.85, hp:12, acorn:1.3, coin:.7,  maxWave:12},
+  normal:{label:"ふつう",   desc:"歯ごたえバッチリの防衛戦",      cnt:1,   spd:1,   hp:10, acorn:1,   coin:1,   maxWave:12},
+  hard:  {label:"むずかしい",desc:"リスの本気。生半可じゃ守れない", cnt:1.35,spd:1.18,hp:8,  acorn:.72, coin:1.5, maxWave:12},
+  endless:{label:"エンドレス",desc:"終わりなき戦い。どこまで耐えられる？", cnt:1.1,spd:1.05,hp:10, acorn:.9, coin:1.8, maxWave:0 }
 };
-const DIFFORDER=["easy","normal","hard"];
+const DIFFORDER=["easy","normal","hard","endless"];
 
 /* ---------- stages ---------- */
 const STAGES={
@@ -38,19 +39,46 @@ const KINDORDER=["norm","scout","armor","tank","flyer","boss"];
 /* ---------- waves per stage (counts BEFORE difficulty mult) ---------- */
 const WAVES={
   park:[
-    {mix:{norm:9, scout:3},                           int:.5 },
-    {mix:{norm:9, scout:4, armor:3},                  int:.42},
-    {mix:{norm:8, scout:4, armor:4, tank:1},          int:.36, boss:true}
+    {mix:{norm:9,  scout:3},                              int:.50},
+    {mix:{norm:9,  scout:4,  armor:3},                    int:.44},
+    {mix:{norm:8,  scout:4,  armor:4,  tank:1},           int:.38, boss:true},
+    {mix:{norm:11, scout:5,  armor:5},                    int:.36},
+    {mix:{norm:11, scout:6,  armor:5,  tank:2},           int:.33, boss:true},
+    {mix:{norm:12, scout:7,  armor:6,  tank:2, flyer:3},  int:.30},
+    {mix:{norm:13, scout:7,  armor:7,  tank:3, flyer:4},  int:.28},
+    {mix:{norm:13, scout:8,  armor:8,  tank:3, flyer:4},  int:.26, boss:true},
+    {mix:{norm:14, scout:9,  armor:9,  tank:4, flyer:5},  int:.24},
+    {mix:{norm:15, scout:10, armor:9,  tank:5, flyer:6},  int:.22},
+    {mix:{norm:16, scout:11, armor:10, tank:5, flyer:7},  int:.20},
+    {mix:{norm:18, scout:12, armor:12, tank:6, flyer:8},  int:.18, boss:true}
   ],
   beach:[
-    {mix:{norm:8, scout:5, flyer:2},                  int:.45},
-    {mix:{norm:8, scout:5, armor:3, tank:1, flyer:3}, int:.38},
-    {mix:{norm:8, scout:6, armor:4, tank:2, flyer:4}, int:.32, boss:true}
+    {mix:{norm:8,  scout:5,  flyer:2},                    int:.45},
+    {mix:{norm:8,  scout:5,  armor:3,  tank:1, flyer:3},  int:.39},
+    {mix:{norm:8,  scout:6,  armor:4,  tank:2, flyer:4},  int:.34, boss:true},
+    {mix:{norm:10, scout:6,  armor:4,  tank:2, flyer:4},  int:.32},
+    {mix:{norm:11, scout:7,  armor:5,  tank:3, flyer:5},  int:.30, boss:true},
+    {mix:{norm:12, scout:7,  armor:6,  tank:3, flyer:6},  int:.28},
+    {mix:{norm:12, scout:8,  armor:7,  tank:4, flyer:6},  int:.26},
+    {mix:{norm:13, scout:9,  armor:8,  tank:4, flyer:7},  int:.24, boss:true},
+    {mix:{norm:14, scout:9,  armor:9,  tank:5, flyer:8},  int:.22},
+    {mix:{norm:15, scout:10, armor:10, tank:5, flyer:9},  int:.20},
+    {mix:{norm:16, scout:11, armor:11, tank:6, flyer:10}, int:.18},
+    {mix:{norm:18, scout:13, armor:13, tank:7, flyer:12}, int:.16, boss:true}
   ],
   snow:[
-    {mix:{norm:8, scout:4, armor:5, flyer:3},         int:.42},
-    {mix:{norm:9, scout:5, armor:5, tank:2, flyer:4}, int:.34},
-    {mix:{norm:10,scout:6, armor:6, tank:2, flyer:5}, int:.3,  boss:true}
+    {mix:{norm:8,  scout:4,  armor:5,  flyer:3},          int:.42},
+    {mix:{norm:9,  scout:5,  armor:5,  tank:2, flyer:4},  int:.36},
+    {mix:{norm:10, scout:6,  armor:6,  tank:2, flyer:5},  int:.31, boss:true},
+    {mix:{norm:11, scout:6,  armor:7,  tank:3, flyer:5},  int:.29},
+    {mix:{norm:12, scout:7,  armor:7,  tank:3, flyer:6},  int:.27, boss:true},
+    {mix:{norm:12, scout:8,  armor:8,  tank:4, flyer:6},  int:.25},
+    {mix:{norm:13, scout:8,  armor:9,  tank:4, flyer:7},  int:.23},
+    {mix:{norm:14, scout:9,  armor:10, tank:5, flyer:7},  int:.21, boss:true},
+    {mix:{norm:15, scout:10, armor:11, tank:5, flyer:8},  int:.20},
+    {mix:{norm:16, scout:11, armor:12, tank:6, flyer:9},  int:.18},
+    {mix:{norm:17, scout:12, armor:13, tank:6, flyer:10}, int:.17},
+    {mix:{norm:20, scout:14, armor:15, tank:8, flyer:12}, int:.15, boss:true}
   ]
 };
 const BOSS_HP_BY_STAGE={park:22,beach:28,snow:36};
@@ -79,16 +107,19 @@ const BREEDORDER=["shiba","golden","dal","corgi","husky","pug"];
 
 /* ---------- permanent upgrades (owner's shop) ---------- */
 const UPS={
-  pow:  {label:"ほねパワー",      desc:"骨ミサイルの威力 +20%/Lv",  max:5, base:120},
-  rate: {label:"れんしゃ訓練",    desc:"発射の間かく -7%/Lv",       max:5, base:120},
-  bark: {label:"メガボイス",      desc:"ワン波の範囲 +8%/Lv",       max:5, base:100},
-  speed:{label:"俊足トレーニング", desc:"移動スピード +6%/Lv",      max:5, base:100},
-  house:{label:"犬小屋補強",      desc:"犬小屋HP +2/Lv",            max:5, base:150},
-  trap: {label:"トラップ袋",      desc:"落とし穴ストック +1/Lv",    max:3, base:200},
-  ally: {label:"お助けわんちゃん",  desc:"いっしょに戦うNPC犬をふやす +1/Lv", max:2, base:250}
+  pow:  {label:"ほねパワー",      desc:"骨ミサイルの威力 +20%/Lv",  max:5, base:160},
+  rate: {label:"れんしゃ訓練",    desc:"発射の間かく -7%/Lv",       max:5, base:160},
+  bark: {label:"メガボイス",      desc:"ワン波の範囲 +8%/Lv",       max:5, base:140},
+  speed:{label:"俊足トレーニング", desc:"移動スピード +6%/Lv",      max:5, base:140},
+  house:{label:"犬小屋補強",      desc:"犬小屋HP +2/Lv",            max:5, base:220},
+  trap: {label:"トラップ袋",      desc:"落とし穴ストック +1/Lv",    max:3, base:280},
+  ally: {label:"お助けわんちゃん",  desc:"いっしょに戦うNPC犬をふやす +1/Lv", max:2, base:400},
+  blast:{label:"爆発トレーニング",  desc:"骨ミサイルの爆風範囲 +10%/Lv", max:4, base:180},
+  combo:{label:"コンボマスター",    desc:"コンボ受付時間 +0.4秒/Lv",    max:3, base:200},
+  barkCd:{label:"早吠え",          desc:"ワン波の待ち時間 -10%/Lv",    max:3, base:240}
 };
-const UPORDER=["pow","rate","bark","speed","house","trap","ally"];
-const upCost=(k,lv)=>Math.round(UPS[k].base*Math.pow(lv+1,1.6));
+const UPORDER=["pow","rate","bark","speed","house","trap","ally","blast","combo","barkCd"];
+const upCost=(k,lv)=>Math.round(UPS[k].base*Math.pow(lv+1,2.1));
 
 /* ---------- owner drop items ---------- */
 const ITEMS={

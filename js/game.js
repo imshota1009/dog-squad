@@ -432,7 +432,7 @@ function startWave(i){
   game.spawnT=.6;
   game.spawnInterval= (isEndless() && i > 3) ? Math.max(0.1, def.int / (1 + inflateVal * 0.18)) : def.int;
   
-  let subtitle = i === 3 ? "ボスのにおいがする…！" : "リス軍団を ぜんぶ吹っとばせ！";
+  let subtitle = def.boss ? "ボスのにおいがする…！" : "リス軍団を ぜんぶ吹っとばせ！";
   if (isEndless() && i > 3) {
     subtitle = "エンドレス！生き延びろ！";
   }
