@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /dog_squad_rooms/{code} {
+      allow read, write: if true;
+      match /relay/{playerId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

@@ -8,7 +8,8 @@
       "**/node_modules/**",
       "server.js",
       "package.json",
-      "package-lock.json"
+      "package-lock.json",
+      "firestore.rules"
     ],
     "cleanUrls": true,
     "headers": [
@@ -22,5 +23,8 @@
         ]
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

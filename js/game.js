@@ -438,7 +438,7 @@ function startWave(i){
   }
   announceW("WAVE "+i+" 襲来!!", subtitle);
   sfx.fanfare();
-  if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"wave",n:i});
+  if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"wave",n:i,boss:!!def.boss});
 }
 function spawnSquirrel(kind){
   const a=rnd(0,Math.PI*2),R=36;
@@ -955,7 +955,7 @@ function handleEv(d){
       break;
     }
     case "wave":game.wave=d.n;setWaveHUD(d.n);
-      announceW("WAVE "+d.n+" 襲来!!",d.n===3?"ボスのにおいがする…！":"リス軍団を ぜんぶ吹っとばせ！");
+      announceW("WAVE "+d.n+" 襲来!!",d.boss?"ボスのにおいがする…！":"リス軍団を ぜんぶ吹っとばせ！");
       sfx.fanfare();break;
     case "clear":announceW("WAVE "+d.n+" クリア!","つぎが来るぞ…!",1.2);sfx.fanfare();break;
     case "bossdown":bossDownFX(V3(d.p[0],d.p[1],d.p[2]));break;
