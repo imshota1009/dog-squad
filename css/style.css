@@ -196,8 +196,8 @@ button{font-family:inherit}
 /* =====================================================
    SCREENS
    ===================================================== */
-.scr{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(circle at 50% 30%,rgba(70,160,220,.93),rgba(20,60,110,.96));overflow:auto;padding:20px}
+.scr{position:fixed;inset:0;z-index:10;display:flex;align-items:flex-start;justify-content:center;
+  background:radial-gradient(circle at 50% 30%,rgba(70,160,220,.93),rgba(20,60,110,.96));overflow:auto;padding:40px 20px}
 .panel{text-align:center;color:#fff;max-width:980px;width:100%}
 .logo{font-size:50px;font-weight:900;line-height:1.15;text-shadow:0 5px 0 #b34700,0 0 30px rgba(0,0,0,.35);margin-bottom:4px}
 .logo .vs{font-size:28px;color:#ffe34d;display:inline-block;transform:rotate(-6deg);margin:0 6px}
