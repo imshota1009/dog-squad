@@ -73,9 +73,7 @@
       <div class="netrow">
         なまえ：<input class="txt" id="inName" maxlength="10" placeholder="イヌタロウ">
       </div>
-      <div class="netrow">
-        サーバー：<input class="txt" id="inServer" style="width:280px;text-transform:none;letter-spacing:0">
-      </div>
+      
       <div class="netrow">
         <button class="go green" id="btnCreate" style="min-width:240px">ルームを作る</button>
       </div>
@@ -84,8 +82,7 @@
         <button class="go blue" id="btnJoin" style="min-width:240px">あいことばで参加</button>
       </div>
       <div class="errmsg" id="lobbyErr"></div>
-      <div class="notice">マルチプレイには同梱の <b>server.js</b> を起動してね（npm install → npm start）。<br>
-        同じWi-Fiの友だちは「http://きみのPCのIP:3000」を開いて、あいことばを入力！</div>
+      
       <div style="margin-top:12px"><button class="btn2" id="btnLobbyBack">もどる</button></div>
     </div>
     <div id="lobbyRoom" class="hidden">
@@ -149,6 +146,20 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+      projectId: "tavinote",
+      appId: "1:284199692696:web:659a3745f0cab5acaee3ed",
+      storageBucket: "tavinote.firebasestorage.app",
+      apiKey: "AIzaSyCGJC8Q9t94nvjq09DG95OvM_Ss-ZtPE78",
+      authDomain: "tavinote.firebaseapp.com",
+      messagingSenderId: "284199692696"
+  });
+</script>
 <script src="js/data.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/world.js"></script>

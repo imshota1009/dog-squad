@@ -945,7 +945,7 @@ function renderShop(){
 }
 /* ---------- lobby ---------- */
 function lobbyInit(){
-  $("#inServer").value=Net.defaultUrl();
+  // $("#inServer").value=Net.defaultUrl();
   let nm="イヌタロウ";try{nm=localStorage.getItem("dsq_name")||nm;}catch(e){}
   $("#inName").value=nm;
   $("#lobbyConnect").classList.remove("hidden");
@@ -956,11 +956,11 @@ async function lobbyConnect(action){
   initAudio();
   const name=($("#inName").value||"イヌ").slice(0,10);
   try{localStorage.setItem("dsq_name",name);}catch(e){}
-  $("#lobbyErr").textContent="せつぞく中…";
+  $("#lobbyErr").textContent="接続中…";
   try{
-    if(!Net.connected)await Net.connect($("#inServer").value.trim());
+    if(!Net.connected)await Net.connect();
   }catch(e){
-    $("#lobbyErr").textContent="サーバーにつながらない… server.js を起動してね（npm install → npm start）";
+    $("#lobbyErr").textContent="接続できませんでした。時間をおいてもう一度お試しください。";
     return;
   }
   $("#lobbyErr").textContent="";
@@ -1168,7 +1168,15 @@ $("#btnLobbyBack").onclick=()=>{sfx.click();Net.leave();renderMenu();show("#scrM
 $("#btnCreate").onclick=()=>lobbyConnect("create");
 $("#btnJoin").onclick=()=>lobbyConnect("join");
 $("#btnLeave").onclick=()=>{Net.leave();lobbyInit();};
-$("#btnCopy").onclick=()=>{try{navigator.clipboard.writeText(Net.code);}catch(e){}};
+$("#btnCopy").onclick=()=>{
+  try{
+    const shareUrl = location.origin + location.pathname + "?room=" + Net.code;
+    navigator.clipboard.writeText(shareUrl);
+    alert("お友だち招待用のURLをコピーしました！ブラウザに貼り付けて参加できます。\n" + shareUrl);
+  }catch(e){
+    navigator.clipboard.writeText(Net.code);
+  }
+};
 $("#btnStart").onclick=()=>{
   if(!Net.host)return;
   if(Net.players.length<2){$("#roomErr").textContent="ひとりだけ…？「ひとりで遊ぶ」もあるよ（このまま出撃もOK!）";}
@@ -1260,3 +1268,19 @@ updMute();
 show("#scrMenu");
 Music.play("menu");
 loop();
+
+// URLに ?room=ABCD がある場合に自動で入室画面へ進む処理
+addEventListener("load", () => {
+  const params = new URLSearchParams(location.search);
+  const room = params.get("room");
+  if (room && room.length === 4) {
+    setTimeout(() => {
+      lobbyInit();
+      $("#inCode").value = room.toUpperCase();
+      show("#scrLobby");
+      setTimeout(() => {
+        lobbyConnect("join");
+      }, 500);
+    }, 1000);
+  }
+});
