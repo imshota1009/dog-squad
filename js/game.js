@@ -631,9 +631,9 @@ function updateSquirrels(dt){
 
 /* guest-side squirrel ghosts */
 function applySnap(m){
-  console.log("applySnap called with:", m);
+  const sq = typeof m.sq === 'string' ? JSON.parse(m.sq) : m.sq;
   const seen={};
-  for(const e of m.sq){
+  for(const e of sq){
     const [id,ki,x,y,z,st,ry]=e;
     seen[id]=true;
     let gh=ghosts[id];

@@ -158,12 +158,12 @@ const Net = {
   game(d) {
     if (!this.code || !this.myPlayerId) return;
     if (d.t === "snap") {
-      this._snap = d;
-      console.log("Host local game snap stored:", d);
+      // Firestore does not support nested arrays; serialize sq as a JSON string
+      this._snap = { t: d.t, sq: JSON.stringify(d.sq), hp: d.hp, sc: d.sc, wv: d.wv, tm: d.tm };
     }
     else if (d.t === "pin") this._pin = d;
     else this._evQueue.push(d);
-    
+
     if (!this._sendTimer) {
       this._sendTimer = setTimeout(() => {
         this._sendTimer = null;
@@ -177,11 +177,11 @@ const Net = {
           evs: this._evQueue,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-        console.log("Host writing merged relay document:", data);
         docRef.set(data).catch(err => {
-          console.error("Host failed to write relay document:", err);
+          console.error("relay write failed:", err);
         });
         this._snap = null;
+        this._pin = null;
         this._evQueue = [];
       }, 100);
     }
