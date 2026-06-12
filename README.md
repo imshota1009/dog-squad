@@ -73,23 +73,22 @@ firebase deploy --only hosting
 
 ## インターネット越しにマルチプレイ（みんなで遊ぶ）をする方法
 
-Firebase Hostingは静的なファイル専用のため、通信用のサーバー（`server.js`）は外部の無料サーバーサービス（**Render** 等）で動かします。
+通信サーバー（`server.js`）は不要になりました！
+Firebase Firestoreを利用した**完全サーバーレスな通信システム**に移行したため、外部のサーバー（Render等）を準備することなく、そのままオンラインでの複数人マルチプレイが可能です。
 
-### 1. 通信サーバー（Render）の準備
-1. GitHubアカウントを作成し、このプロジェクトのコードをGitHubにアップロードします。
-2. [Render](https://render.com/) にログインし、**New Web Service** を作成します。
-3. アップロードしたGitHubのリポジトリを連携します。
-4. 設定内容は以下のように指定します：
-   - **Runtime**: `Node`
-   - **Build Command**: `npm install`
-   - **Start Command**: `node server.js`
-5. デプロイされると、通信用のURL（例: `https://dog-squad-server.onrender.com`）が発行されます。
+### 1. 招待URLでの簡単参加
+1. ゲームの「みんなで遊ぶ」画面から「ルームを作る」を押します。
+2. 表示された画面の「コピー」ボタンを押すと、**お友だち招待用のURL（例: `https://dog-squad-game.web.app/?room=ABCD`）**がコピーされます。
+3. そのURLをお友だちに送るだけで、お友だちはURLを開くだけで自動的に同じルームへ入室できます！
 
-### 2. ゲーム接続先の更新
-発行されたURLの頭を `wss://` に変更し、`js/net.js` の `defaultUrl()` の箇所を以下のように書き換えて再度 Firebase にデプロイします。
-```javascript
-// js/net.js 内の記述
-return "wss://<あなたのRenderサービス名>.onrender.com";
+---
+
+## Firebaseでの公開手順
+
+このゲームはFirebase Hostingを利用して簡単にインターネット上に公開できます。
+
+```bash
+firebase deploy --only hosting
 ```
 
 ---
@@ -100,7 +99,7 @@ return "wss://<あなたのRenderサービス名>.onrender.com";
 2. フォルダ内で以下のコマンドを実行します。
 ```bash
 git add .
-git commit -m "feat: Firebase & Render deployment configuration"
+git commit -m "feat: Serverless multiplayer with Firebase Firestore"
 git branch -M main
 git remote add origin https://github.com/imshota1009/dog-squad.git
 git push -u origin main -f
