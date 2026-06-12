@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "dog-squad-game",
+    "site": "dog-squad-game-app",
     "public": ".",
     "ignore": [
       "firebase.json",
