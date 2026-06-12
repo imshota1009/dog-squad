@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DOG SQUAD vs SQUIRREL INVASION</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="game"></div>
+
+<button id="muteBtn" title="サウンド切替"><i class="ic spk" id="spkIc"><b></b></i></button>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="hpwrap"><i class="ic house"></i><div id="hpbar"><div id="hpfill"></div></div></div>
+  <div id="wavebox"><span id="wave">WAVE 1/3</span><span id="timer">0.0 s</span></div>
+  <div id="scorebox"><em>SCORE</em><span id="score">0</span></div>
+  <div id="buffs"></div>
+  <div id="skills">
+    <div class="sk"><i class="ic bone"></i><small>クリック</small><div class="cd" id="cd0"></div></div>
+    <div class="sk"><i class="ic bark"><b></b></i><small>SPACE</small><div class="cd" id="cd1"></div></div>
+    <div class="sk"><i class="ic trap"></i><small id="trapN">×3 (E)</small></div>
+  </div>
+</div>
+<div id="combo"></div>
+<div id="announce"></div>
+<div id="labels"></div>
+
+<!-- ============ MENU ============ -->
+<div id="scrMenu" class="scr">
+  <div class="panel">
+    <div class="logo">DOG SQUAD <span class="vs">VS</span> SQUIRREL INVASION</div>
+    <div class="sub">どんぐり武装のリス軍団から、ぼくらの公園を守りぬけ！</div>
+    <div class="menuDogs">
+      <span class="dogface shiba"><i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i><i class="feye l"></i><i class="feye r"></i></span>
+      <span class="dogface golden"><i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i><i class="feye l"></i><i class="feye r"></i></span>
+      <span class="dogface dal"><i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i><i class="feye l"></i><i class="feye r"></i></span>
+    </div>
+    <div class="coinrow"><i class="ic coin"></i><span id="menuCoins">0</span> ほねコイン　|　ハイスコア <span id="menuBest">0</span></div>
+    <div class="mainBtns">
+      <button class="go" id="btnSolo">ひとりで遊ぶ</button>
+      <button class="go blue" id="btnMulti">みんなで遊ぶ（最大6人）</button>
+      <button class="go green" id="btnShop">飼い主のショップ</button>
+    </div>
+    <div class="ctrl">WASD / 矢印キー：移動　|　マウス：ねらう　|　クリック：骨ミサイル<br>
+      SPACE：ワン!衝撃波　|　E / 右クリック：落とし穴　|　犬小屋を守れ！</div>
+  </div>
+</div>
+
+<!-- ============ SOLO SETUP ============ -->
+<div id="scrSetup" class="scr hidden">
+  <div class="panel">
+    <div class="h2">そうびを ととのえよう</div>
+    <div class="h2" style="font-size:18px">わんちゃんを えらぶ</div>
+    <div class="pickRow" id="breedRow"></div>
+    <div class="h2" style="font-size:18px">ステージを えらぶ</div>
+    <div class="pickRow" id="stageRow"></div>
+    <div class="h2" style="font-size:18px">むずかしさを えらぶ</div>
+    <div class="pickRow" id="diffRow"></div>
+    <div style="margin-top:18px">
+      <button class="btn2" id="btnSetupBack">もどる</button>
+      <button class="go" id="btnSetupGo" style="margin-left:14px">しゅつげき！</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LOBBY ============ -->
+<div id="scrLobby" class="scr hidden">
+  <div class="panel">
+    <div class="h2">みんなで遊ぶ — ルーム</div>
+    <div id="lobbyConnect">
+      <div class="netrow">
+        なまえ：<input class="txt" id="inName" maxlength="10" placeholder="イヌタロウ">
+      </div>
+      <div class="netrow">
+        サーバー：<input class="txt" id="inServer" style="width:280px;text-transform:none;letter-spacing:0">
+      </div>
+      <div class="netrow">
+        <button class="go green" id="btnCreate" style="min-width:240px">ルームを作る</button>
+      </div>
+      <div class="netrow">
+        <input class="txt code" id="inCode" maxlength="4" placeholder="ABCD">
+        <button class="go blue" id="btnJoin" style="min-width:240px">あいことばで参加</button>
+      </div>
+      <div class="errmsg" id="lobbyErr"></div>
+      <div class="notice">マルチプレイには同梱の <b>server.js</b> を起動してね（npm install → npm start）。<br>
+        同じWi-Fiの友だちは「http://きみのPCのIP:3000」を開いて、あいことばを入力！</div>
+      <div style="margin-top:12px"><button class="btn2" id="btnLobbyBack">もどる</button></div>
+    </div>
+    <div id="lobbyRoom" class="hidden">
+      <div>あいことば</div>
+      <div class="roomCode" id="roomCode">----</div>
+      <button class="btn2" id="btnCopy">コピー</button>
+      <div class="slots" id="slots"></div>
+      <div class="h2" style="font-size:18px">じぶんの わんちゃん</div>
+      <div class="pickRow" id="breedRowL"></div>
+      <div id="hostCfg">
+        <div class="h2" style="font-size:18px">ステージ</div>
+        <div class="pickRow" id="stageRowL"></div>
+        <div class="h2" style="font-size:18px">むずかしさ</div>
+        <div class="pickRow" id="diffRowL"></div>
+      </div>
+      <div class="errmsg" id="roomErr"></div>
+      <div style="margin-top:14px">
+        <button class="btn2" id="btnLeave">ルームを出る</button>
+        <button class="go" id="btnStart" style="margin-left:14px">ぜんいん しゅつげき！</button>
+      </div>
+      <div class="notice hidden" id="waitHost">ホストの「しゅつげき」を待っています…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SHOP ============ -->
+<div id="scrShop" class="scr hidden">
+  <div class="panel">
+    <div class="h2">飼い主のショップ — 永続パワーアップ</div>
+    <div class="coinrow"><i class="ic coin"></i><span id="shopCoins">0</span> ほねコイン</div>
+    <div class="shopGrid">
+      <div class="shopOwner">
+        <div class="ownerArt">
+          <div class="oa-arm"><div class="oa-hand"></div><i class="ic bone"></i></div>
+          <div class="oa-arm2"></div>
+          <div class="oa-body"></div><div class="oa-apron"></div><div class="oa-pocket"></div>
+          <div class="oa-face"></div><div class="oa-hat"></div><div class="oa-brim"></div>
+          <div class="oa-eye l"></div><div class="oa-eye r"></div>
+          <div class="oa-cheek l"></div><div class="oa-cheek r"></div>
+          <div class="oa-smile"></div>
+        </div>
+        <div class="bubble" id="ownerTalk">おかえり！コインで きたえてあげよう。バトル中も ぼくがアイテムを投げ入れるからね！</div>
+      </div>
+      <div class="upList" id="upList"></div>
+    </div>
+    <div style="margin-top:16px"><button class="btn2" id="btnShopBack">もどる</button></div>
+  </div>
+</div>
+
+<!-- ============ RESULT ============ -->
+<div id="scrResult" class="scr hidden">
+  <div class="panel">
+    <div class="logo" id="resTitle" style="font-size:40px">公園防衛 大成功！</div>
+    <div id="resRank">S</div>
+    <div id="resStats"></div>
+    <div class="resBtns">
+      <button class="go" id="btnRetry">もういちど！</button>
+      <button class="go blue" id="btnMenu">メニューへ</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/world.js"></script>
+<script src="js/net.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

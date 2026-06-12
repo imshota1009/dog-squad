@@ -1,0 +1,14 @@
+{
+  "name": "dog-squad-vs-squirrel-invasion",
+  "version": "2.0.0",
+  "description": "3D tower-defense x action game in the browser. Defend the park with the DOG SQUAD! Solo or up to 6-player co-op.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["game", "threejs", "tower-defense", "multiplayer", "websocket"],
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.17.0"
+  }
+}

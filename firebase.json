@@ -1,0 +1,15 @@
+{
+  "hosting": {
+    "site": "dog-squad-game",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "server.js",
+      "package.json",
+      "package-lock.json"
+    ],
+    "cleanUrls": true
+  }
+}

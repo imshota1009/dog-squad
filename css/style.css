@@ -1,0 +1,284 @@
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#9adcf5;
+  font-family:"Hiragino Maru Gothic ProN","M PLUS Rounded 1c","Yu Gothic UI","Meiryo",sans-serif}
+#game canvas{display:block}
+.hidden{display:none!important}
+button{font-family:inherit}
+
+/* =====================================================
+   CSS ICONS (no emoji anywhere)
+   ===================================================== */
+.ic{display:inline-block;position:relative;vertical-align:-4px}
+.ic.s{transform:scale(.72);vertical-align:-6px}
+
+/* bone */
+.ic.bone{width:30px;height:13px}
+.ic.bone::before{content:"";position:absolute;left:5px;right:5px;top:3px;height:7px;background:#fffbe8;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.ic.bone::after{content:"";position:absolute;width:9px;height:9px;background:#fffbe8;border-radius:50%;
+  left:0;top:0;box-shadow:0 4px 0 #fffbe8,21px 0 0 #fffbe8,21px 4px 0 #fffbe8}
+
+/* bark (sound waves) */
+.ic.bark{width:26px;height:24px}
+.ic.bark::before{content:"";position:absolute;left:1px;top:9px;width:7px;height:7px;background:#ffe34d;border-radius:50%}
+.ic.bark::after{content:"";position:absolute;left:5px;top:5px;width:13px;height:13px;
+  border:3px solid transparent;border-right-color:#ffe34d;border-radius:50%}
+.ic.bark b{position:absolute;left:5px;top:1px;width:21px;height:21px;
+  border:3px solid transparent;border-right-color:#ffe34d;border-radius:50%}
+
+/* trap hole */
+.ic.trap{width:28px;height:15px}
+.ic.trap::before{content:"";position:absolute;inset:0;background:#6b4d2e;border-radius:50%}
+.ic.trap::after{content:"";position:absolute;left:4px;top:3px;right:4px;bottom:5px;background:#1d1208;border-radius:50%}
+
+/* doghouse */
+.ic.house{width:24px;height:22px}
+.ic.house::before{content:"";position:absolute;left:-2px;top:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:10px solid #8d3b2a}
+.ic.house::after{content:"";position:absolute;left:1px;top:10px;width:22px;height:12px;background:#d9603b;
+  background-image:radial-gradient(circle at 50% 100%,#3a2417 4px,transparent 5px)}
+
+/* heart */
+.ic.heart{width:20px;height:18px}
+.ic.heart::before,.ic.heart::after{content:"";position:absolute;top:0;width:11px;height:16px;background:#ff5e7e;border-radius:8px 8px 0 0}
+.ic.heart::before{left:0;transform:rotate(-42deg)}
+.ic.heart::after{right:0;transform:rotate(42deg)}
+
+/* bone coin */
+.ic.coin{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe98a,#f0a500);border:2px solid #c87f0a}
+.ic.coin::before{content:"";position:absolute;left:3px;top:6px;width:10px;height:3px;background:#fff;border-radius:2px}
+.ic.coin::after{content:"";position:absolute;width:4px;height:4px;background:#fff;border-radius:50%;
+  left:1px;top:4px;box-shadow:0 4px 0 #fff,10px 0 0 #fff,10px 4px 0 #fff}
+
+/* paw */
+.ic.paw{width:24px;height:22px}
+.ic.paw::before{content:"";position:absolute;left:5px;bottom:0;width:14px;height:11px;background:#5b4632;border-radius:50% 50% 60% 60%}
+.ic.paw::after{content:"";position:absolute;left:0;top:2px;width:6px;height:7px;background:#5b4632;border-radius:50%;
+  box-shadow:6px -3px 0 #5b4632,12px -3px 0 #5b4632,18px 0 0 #5b4632}
+
+/* crown */
+.ic.crown{width:26px;height:17px;background:#ffd700;
+  clip-path:polygon(0 100%,0 25%,20% 55%,50% 0,80% 55%,100% 25%,100% 100%)}
+
+/* star */
+.ic.star{width:20px;height:20px;background:#ffe34d;
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+
+/* squirrel */
+.ic.squi{width:32px;height:26px}
+.ic.squi::before{content:"";position:absolute;left:0;bottom:0;width:17px;height:15px;background:#f2a65a;border-radius:50% 50% 45% 45%}
+.ic.squi::after{content:"";position:absolute;right:0;bottom:1px;width:15px;height:23px;background:#e98f3e;border-radius:0 100% 20% 100%;transform:rotate(8deg)}
+.ic.squi b{position:absolute;left:3px;top:0;width:6px;height:9px;background:#f2a65a;border-radius:50% 50% 0 0}
+.ic.squi i{position:absolute;left:4px;bottom:7px;width:3px;height:3px;background:#222;border-radius:50%;box-shadow:6px 0 0 #222}
+
+/* acorn */
+.ic.acorn{width:14px;height:18px}
+.ic.acorn::before{content:"";position:absolute;left:1px;bottom:0;width:12px;height:12px;background:#c98a4b;border-radius:40% 40% 50% 50%}
+.ic.acorn::after{content:"";position:absolute;left:0;top:2px;width:14px;height:7px;background:#7a5230;border-radius:50% 50% 20% 20%;box-shadow:0 -3px 0 -1px #5d3d20}
+
+/* speaker */
+.ic.spk{width:26px;height:22px}
+.ic.spk::before{content:"";position:absolute;left:0;top:4px;width:13px;height:14px;background:#fff;
+  clip-path:polygon(0 30%,40% 30%,100% 0,100% 100%,40% 70%,0 70%)}
+.ic.spk::after{content:"";position:absolute;right:2px;top:4px;width:13px;height:13px;
+  border:3px solid transparent;border-right-color:#fff;border-radius:50%}
+.ic.spk.off::after{border-right-color:transparent}
+.ic.spk.off b{position:absolute;left:2px;top:9px;width:22px;height:3px;background:#ff5e7e;transform:rotate(-35deg);border-radius:2px}
+
+/* meat */
+.ic.meat{width:26px;height:18px}
+.ic.meat::before{content:"";position:absolute;left:0;top:1px;width:17px;height:15px;background:radial-gradient(circle at 35% 35%,#e8765a,#c0392b);border-radius:50%}
+.ic.meat::after{content:"";position:absolute;right:0;top:5px;width:6px;height:6px;background:#fffbe8;border-radius:50%;box-shadow:2px 4px 0 -1px #fffbe8,-3px 2px 0 -1px #f3d9c2}
+
+/* lightning */
+.ic.flash{width:16px;height:22px;background:#ffe34d;
+  clip-path:polygon(60% 0,10% 55%,42% 55%,30% 100%,90% 40%,55% 40%)}
+
+/* blast */
+.ic.blast{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#fff1d6 20%,#ff9d2e 60%,#e74c3c)}
+.ic.blast::after{content:"";position:absolute;inset:-4px;border:2px solid #ff9d2e;border-radius:50%;opacity:.7}
+
+/* trophy */
+.ic.cup{width:24px;height:24px}
+.ic.cup::before{content:"";position:absolute;left:4px;top:0;width:16px;height:13px;background:#ffd700;border-radius:0 0 12px 12px;
+  box-shadow:-4px 0 0 -1px #f0a500,4px 0 0 -1px #f0a500}
+.ic.cup::after{content:"";position:absolute;left:8px;top:13px;width:8px;height:5px;background:#f0a500;box-shadow:-3px 5px 0 1px #c87f0a}
+
+/* =====================================================
+   DOG FACES (CSS art)
+   ===================================================== */
+.dogface{--c:#e8a25a;--c2:#fff3dc;--e:#d98c3f;position:relative;display:inline-block;
+  width:62px;height:56px;background:var(--c);border-radius:46% 46% 50% 50%;margin-top:14px}
+.dogface .ear{position:absolute;top:-11px;width:18px;height:20px;background:var(--e);
+  clip-path:polygon(50% 0,100% 100%,0 100%)}
+.dogface .ear.l{left:5px}.dogface .ear.r{right:5px}
+.dogface.golden .ear,.dogface.dal .ear,.dogface.pug .ear{
+  clip-path:none;border-radius:45% 45% 50% 50%;height:30px;top:-2px}
+.dogface.golden .ear.l,.dogface.dal .ear.l,.dogface.pug .ear.l{left:-7px;transform:rotate(14deg)}
+.dogface.golden .ear.r,.dogface.dal .ear.r,.dogface.pug .ear.r{right:-7px;transform:rotate(-14deg)}
+.dogface .fmuz{position:absolute;left:50%;transform:translateX(-50%);bottom:3px;width:27px;height:20px;background:var(--c2);border-radius:50%}
+.dogface .fmuz::after{content:"";position:absolute;left:50%;top:-3px;transform:translateX(-50%);width:10px;height:8px;background:#222;border-radius:50%}
+.dogface .feye{position:absolute;top:19px;width:7px;height:9px;background:#1a1a1a;border-radius:50%}
+.dogface .feye.l{left:14px}.dogface .feye.r{right:14px}
+.dogface.shiba{--c:#e8a25a;--c2:#fff3dc;--e:#d98c3f}
+.dogface.golden{--c:#e6c069;--c2:#f7e3b0;--e:#cfa44e}
+.dogface.dal{--c:#f5f5f5;--c2:#fff;--e:#222;
+  background-image:radial-gradient(circle at 20% 32%,#222 4px,transparent 5px),
+    radial-gradient(circle at 78% 22%,#222 5px,transparent 6px),
+    radial-gradient(circle at 62% 55%,#222 3px,transparent 4px)}
+.dogface.corgi{--c:#f0a868;--c2:#fff3dc;--e:#e09050}
+.dogface.husky{--c:#95a5b8;--c2:#f2f4f7;--e:#6c7a91;
+  background-image:radial-gradient(ellipse 60% 55% at 50% 80%,#f2f4f7 60%,transparent 61%)}
+.dogface.pug{--c:#d7b07f;--c2:#5c4326;--e:#5c4326}
+.dogface.pug .fmuz{height:16px}
+.dogface.mini{transform:scale(.6);margin:-8px}
+
+/* =====================================================
+   OWNER CSS ART (shop)
+   ===================================================== */
+.ownerArt{position:relative;width:160px;height:215px;margin:0 auto 6px}
+.oa-hat{position:absolute;top:0;left:40px;width:80px;height:32px;background:#2ecc71;border-radius:40px 40px 6px 6px}
+.oa-brim{position:absolute;top:27px;left:28px;width:104px;height:11px;background:#27ae60;border-radius:8px}
+.oa-face{position:absolute;top:36px;left:45px;width:70px;height:60px;background:#f2c89b;border-radius:42%}
+.oa-eye{position:absolute;top:58px;width:8px;height:10px;background:#333;border-radius:50%}
+.oa-eye.l{left:64px}.oa-eye.r{left:88px}
+.oa-cheek{position:absolute;top:68px;width:10px;height:6px;background:#f5a98f;border-radius:50%}
+.oa-cheek.l{left:56px}.oa-cheek.r{left:94px}
+.oa-smile{position:absolute;top:74px;left:68px;width:24px;height:12px;border:3px solid #a05a2c;border-top:none;border-radius:0 0 20px 20px}
+.oa-body{position:absolute;top:94px;left:30px;width:100px;height:88px;background:#ff8c42;border-radius:26px 26px 12px 12px}
+.oa-apron{position:absolute;top:116px;left:48px;width:64px;height:66px;background:#fdf0d5;border-radius:10px 10px 8px 8px}
+.oa-pocket{position:absolute;top:150px;left:62px;width:36px;height:22px;background:#e8d4ae;border-radius:4px 4px 8px 8px}
+.oa-arm{position:absolute;top:100px;left:-6px;width:26px;height:62px;background:#ff8c42;border-radius:13px;transform:rotate(28deg);transform-origin:top center;animation:oaWave 2.2s ease-in-out infinite}
+.oa-hand{position:absolute;bottom:-8px;left:4px;width:18px;height:18px;background:#f2c89b;border-radius:50%}
+.oa-arm .ic.bone{position:absolute;bottom:-12px;left:-8px;transform:rotate(-30deg)}
+.oa-arm2{position:absolute;top:100px;right:-6px;width:26px;height:62px;background:#ff8c42;border-radius:13px;transform:rotate(-16deg)}
+@keyframes oaWave{0%,100%{transform:rotate(28deg)}50%{transform:rotate(50deg)}}
+
+/* =====================================================
+   HUD
+   ===================================================== */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#hpwrap{position:absolute;top:14px;left:16px;display:flex;align-items:center;gap:8px}
+#hpbar{width:220px;height:22px;background:rgba(0,0,0,.35);border-radius:12px;border:3px solid #fff;overflow:hidden}
+#hpfill{height:100%;width:100%;border-radius:8px;background:linear-gradient(90deg,#ff5e7e,#ffb46b);transition:width .2s}
+#wavebox{position:absolute;top:12px;left:50%;transform:translateX(-50%);text-align:center;color:#fff;
+  text-shadow:0 2px 0 rgba(0,0,0,.35);font-weight:900}
+#wave{font-size:30px;letter-spacing:2px}
+#timer{display:block;font-size:16px;opacity:.95}
+#scorebox{position:absolute;top:14px;right:18px;text-align:right;color:#fff;font-weight:900;
+  text-shadow:0 2px 0 rgba(0,0,0,.35)}
+#scorebox em{display:block;font-style:normal;font-size:14px;letter-spacing:3px}
+#score{font-size:34px}
+#buffs{position:absolute;top:84px;right:18px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.buff{background:rgba(255,255,255,.9);color:#4a3622;font-weight:900;font-size:13px;
+  padding:4px 10px;border-radius:20px;border:2px solid #5b4632}
+#skills{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:12px}
+.sk{position:relative;width:80px;height:80px;background:rgba(255,255,255,.88);border:4px solid #5b4632;
+  border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  overflow:hidden;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.sk small{font-size:11px;font-weight:900;color:#5b4632}
+.sk .cd{position:absolute;left:0;bottom:0;width:100%;height:0%;background:rgba(40,40,80,.55);pointer-events:none}
+
+/* floating texts */
+#labels{position:fixed;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.ftx{position:absolute;transform:translate(-50%,-50%);font-weight:900;white-space:nowrap;
+  color:#fff;text-shadow:0 2px 0 #c0392b,0 0 8px rgba(0,0,0,.3);font-size:22px}
+.ftx.good{text-shadow:0 2px 0 #1e8449,0 0 8px rgba(0,0,0,.3)}
+.ftx.big{font-size:34px}
+#combo{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:7;pointer-events:none;
+  font-size:44px;font-weight:900;color:#ffe34d;text-shadow:0 3px 0 #c0392b,0 0 14px rgba(0,0,0,.4);
+  opacity:0;transition:opacity .3s}
+#combo.pop{animation:cpop .35s}
+@keyframes cpop{0%{transform:translateX(-50%) scale(1.7) rotate(-4deg)}100%{transform:translateX(-50%) scale(1)}}
+#announce{position:fixed;top:36%;left:50%;transform:translate(-50%,-50%);z-index:7;pointer-events:none;
+  text-align:center;font-weight:900;color:#fff;opacity:0;transition:opacity .25s}
+#announce h2{font-size:54px;text-shadow:0 4px 0 #b34700,0 0 22px rgba(0,0,0,.4);letter-spacing:3px}
+#announce p{font-size:22px;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+
+/* =====================================================
+   SCREENS
+   ===================================================== */
+.scr{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 30%,rgba(70,160,220,.93),rgba(20,60,110,.96));overflow:auto;padding:20px}
+.panel{text-align:center;color:#fff;max-width:980px;width:100%}
+.logo{font-size:50px;font-weight:900;line-height:1.15;text-shadow:0 5px 0 #b34700,0 0 30px rgba(0,0,0,.35);margin-bottom:4px}
+.logo .vs{font-size:28px;color:#ffe34d;display:inline-block;transform:rotate(-6deg);margin:0 6px}
+.sub{font-size:16px;font-weight:700;margin-bottom:16px;color:#dff2ff}
+.coinrow{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);
+  padding:8px 18px;border-radius:30px;font-weight:900;font-size:18px;margin-bottom:14px}
+.menuDogs{display:flex;gap:24px;justify-content:center;margin:8px 0 18px}
+.mainBtns{display:flex;flex-direction:column;gap:14px;align-items:center;margin-bottom:14px}
+button.go{font-size:26px;font-weight:900;color:#fff;cursor:pointer;
+  background:linear-gradient(#ff9d2e,#f06b1f);border:4px solid #fff;border-radius:50px;
+  padding:12px 54px;box-shadow:0 7px 0 #a34a10;transition:transform .1s;min-width:340px}
+button.go:hover{transform:scale(1.05)}
+button.go:active{transform:translateY(5px);box-shadow:0 2px 0 #a34a10}
+button.go.blue{background:linear-gradient(#54a9ff,#2475d8);box-shadow:0 7px 0 #14478c}
+button.go.blue:active{box-shadow:0 2px 0 #14478c}
+button.go.green{background:linear-gradient(#42d77d,#1ea65a);box-shadow:0 7px 0 #11683a}
+button.go.green:active{box-shadow:0 2px 0 #11683a}
+button.btn2{font-size:17px;font-weight:900;color:#fff;cursor:pointer;background:rgba(255,255,255,.18);
+  border:3px solid #fff;border-radius:30px;padding:8px 26px;transition:background .15s}
+button.btn2:hover{background:rgba(255,255,255,.32)}
+button.btn2:disabled{opacity:.4;cursor:default}
+.ctrl{font-size:14px;font-weight:800;background:rgba(0,0,0,.3);display:inline-block;
+  padding:9px 18px;border-radius:24px;line-height:1.7}
+#muteBtn{position:fixed;top:14px;right:14px;z-index:20;width:52px;height:48px;cursor:pointer;
+  background:rgba(0,0,0,.35);border:3px solid #fff;border-radius:14px;display:flex;align-items:center;justify-content:center}
+
+/* pick cards */
+.h2{font-size:24px;font-weight:900;margin:14px 0 8px;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.pickRow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.pick{background:rgba(255,255,255,.92);color:#4a3622;border-radius:16px;padding:10px 12px;cursor:pointer;
+  border:4px solid transparent;box-shadow:0 5px 0 rgba(0,0,0,.25);transition:transform .12s,border-color .12s;min-width:140px}
+.pick:hover{transform:translateY(-3px)}
+.pick.sel{border-color:#ffe34d;transform:scale(1.05);background:#fffbe8}
+.pick b{display:block;font-size:15px;margin-top:4px}
+.pick span{font-size:12px;font-weight:700;color:#7a5c3e;line-height:1.4}
+.pick .stg{display:block;width:120px;height:54px;border-radius:10px;margin:0 auto 4px}
+.stg.park{background:linear-gradient(#9adcf5 40%,#7ecb5a 40%)}
+.stg.beach{background:linear-gradient(#ffc88a 45%,#eed9a4 45%)}
+.stg.snow{background:linear-gradient(#bcd7f0 45%,#eef4fb 45%)}
+.pick .paws{margin-top:2px}
+
+/* lobby */
+.roomCode{font-size:44px;font-weight:900;letter-spacing:10px;background:rgba(0,0,0,.35);
+  display:inline-block;padding:6px 26px;border-radius:16px;margin:6px 0}
+.slots{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.slot{width:130px;min-height:120px;background:rgba(255,255,255,.15);border:3px dashed rgba(255,255,255,.5);
+  border-radius:14px;padding:8px;font-weight:900;font-size:14px}
+.slot.full{background:rgba(255,255,255,.92);color:#4a3622;border-style:solid;border-color:#fff}
+.slot .tag{display:inline-block;font-size:11px;background:#e74c3c;color:#fff;border-radius:8px;padding:1px 8px;margin-top:3px}
+input.txt{font-family:inherit;font-size:18px;font-weight:900;padding:9px 14px;border-radius:12px;
+  border:3px solid #fff;background:rgba(255,255,255,.92);color:#333;width:200px;text-align:center}
+input.txt.code{text-transform:uppercase;letter-spacing:6px;width:160px}
+.netrow{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:10px 0}
+.notice{font-size:13px;font-weight:700;color:#ffe9b0;background:rgba(0,0,0,.25);display:inline-block;
+  padding:8px 16px;border-radius:14px;line-height:1.6;margin-top:8px}
+.errmsg{color:#ffb3c1;font-weight:900;min-height:22px;margin-top:6px}
+
+/* shop */
+.shopGrid{display:flex;gap:20px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+.shopOwner{background:rgba(255,255,255,.12);border-radius:20px;padding:16px;width:240px}
+.bubble{background:#fff;color:#4a3622;font-weight:800;font-size:14px;border-radius:14px;padding:10px;line-height:1.5;position:relative}
+.bubble::after{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:10px solid #fff}
+.upList{display:flex;flex-direction:column;gap:8px;width:420px}
+.upRow{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.92);color:#4a3622;
+  border-radius:14px;padding:9px 12px;text-align:left}
+.upRow .nm{flex:1}
+.upRow .nm b{font-size:15px}
+.upRow .nm span{display:block;font-size:12px;color:#7a5c3e;font-weight:700}
+.lvDots{display:flex;gap:3px}
+.lvDots i{width:10px;height:10px;border-radius:50%;background:#d8cdbb}
+.lvDots i.on{background:#f0a500}
+.buyBtn{font-size:14px;font-weight:900;color:#fff;background:linear-gradient(#42d77d,#1ea65a);
+  border:2px solid #fff;border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.buyBtn:disabled{background:#9aa5a1;cursor:default;opacity:.7}
+
+/* result */
+#resRank{font-size:104px;font-weight:900;color:#ffe34d;text-shadow:0 6px 0 #c0392b,0 0 40px #fff;line-height:1.1}
+#resStats{font-size:19px;font-weight:800;line-height:2;margin:10px 0 16px}
+.resBtns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+/* bone icon needs contrast on white skill cards */
+.sk .ic.bone::before{background:#cfa45e;box-shadow:none}
+.sk .ic.bone::after{background:#cfa45e;box-shadow:0 4px 0 #cfa45e,21px 0 0 #cfa45e,21px 4px 0 #cfa45e}
