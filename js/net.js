@@ -12,6 +12,7 @@ const Net = {
   roomListener: null,
   relayListener: null,
   myPlayerId: null,
+  _gameStarted: false,
 
   defaultUrl() {
     return "";
@@ -139,25 +140,51 @@ const Net = {
     }
     else if (o.t === "start") {
       if (!this.code) return;
+      this._gameStarted = true;
       const roomRef = db.collection("dog_squad_rooms").doc(this.code);
       await roomRef.update({
         started: true,
         stage: o.stage,
-        diff: o.diff
+        diff: o.diff,
+        allyLv: o.allyLv || 0
       });
     }
   },
 
+  _evQueue: [],
+  _snap: null,
+  _pin: null,
+  _sendTimer: null,
   game(d) {
     if (!this.code || !this.myPlayerId) return;
-    const db = firebase.firestore();
-    const docRef = db.collection("dog_squad_rooms").doc(this.code).collection("relay").doc(this.myPlayerId);
-    docRef.set({
-      t: "game",
-      from: this.id,
-      d: d,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(err => {});
+    if (d.t === "snap") {
+      this._snap = d;
+      console.log("Host local game snap stored:", d);
+    }
+    else if (d.t === "pin") this._pin = d;
+    else this._evQueue.push(d);
+    
+    if (!this._sendTimer) {
+      this._sendTimer = setTimeout(() => {
+        this._sendTimer = null;
+        const db = firebase.firestore();
+        const docRef = db.collection("dog_squad_rooms").doc(this.code).collection("relay").doc(this.myPlayerId);
+        const data = {
+          t: "merged",
+          from: this.id,
+          snap: this._snap,
+          pin: this._pin,
+          evs: this._evQueue,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        console.log("Host writing merged relay document:", data);
+        docRef.set(data).catch(err => {
+          console.error("Host failed to write relay document:", err);
+        });
+        this._snap = null;
+        this._evQueue = [];
+      }, 100);
+    }
   },
 
   leave() {
@@ -182,6 +209,7 @@ const Net = {
     }
 
     this.connected = false;
+    this._gameStarted = false;
     this.players = [];
     this.code = null;
     this.id = null;
@@ -210,13 +238,15 @@ const Net = {
         this.handlers["players"]({ t: "players", players: data.players });
       }
 
-      if (data.started) {
+      if (data.started && !this._gameStarted) {
+        this._gameStarted = true;
         if (this.handlers["start"]) {
           this.handlers["start"]({
             t: "start",
             stage: data.stage,
             diff: data.diff,
-            players: data.players
+            players: data.players,
+            allyLv: data.allyLv || 0
           });
         }
       }
@@ -226,13 +256,21 @@ const Net = {
       snap.docChanges().forEach(change => {
         if (change.type === "added" || change.type === "modified") {
           const data = change.doc.data();
+          console.log("Guest received relay document change:", change.type, "from:", data.from, "data:", data);
           if (data.from !== this.id) {
             if (this.handlers["game"]) {
-              this.handlers["game"]({
-                t: "game",
-                from: data.from,
-                d: data.d
-              });
+              if (data.t === "merged") {
+                if (data.snaps) data.snaps.forEach(sn => this.handlers["game"]({t: "game", from: data.from, d: sn}));
+                if (data.snap) this.handlers["game"]({t: "game", from: data.from, d: data.snap});
+                if (data.pin) this.handlers["game"]({t: "game", from: data.from, d: data.pin});
+                if (data.evs) data.evs.forEach(ev => this.handlers["game"]({t: "game", from: data.from, d: ev}));
+              } else {
+                this.handlers["game"]({
+                  t: "game",
+                  from: data.from,
+                  d: data.d
+                });
+              }
             }
           }
         }

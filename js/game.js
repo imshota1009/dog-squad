@@ -16,7 +16,9 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 function show(id){$$(".scr").forEach(e=>e.classList.add("hidden"));if(id)$(id).classList.remove("hidden");}
 function dogFaceHTML(b,mini){
-  return '<span class="dogface '+b+(mini?' mini':'')+'"><i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i><i class="feye l"></i><i class="feye r"></i></span>';
+  return '<span class="dogface '+b+(mini?' mini':'')+'">'
+    +'<i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i>'
+    +'<i class="feye l"></i><i class="feye r"></i></span>';
 }
 const icHTML={
   bone:'<i class="ic bone s"></i>',bark:'<i class="ic bark s"><b></b></i>',
@@ -34,9 +36,9 @@ function calcStats(breedKey){
     dmg:   2*(b.dmg||1)*(1+.2*upLv("pow")),
     cd:    .3/((b.rate||1)*(1+.07*upLv("rate"))),
     barkR: 8*(b.barkR||1)*(1+.08*upLv("bark")),
-    barkCd:3.2*(b.barkCd||1),
+    barkCd:3.2*(b.barkCd||1)*(1-.1*upLv("barkCd")),
     spd:   11*(b.spd||1)*(1+.06*upLv("speed")),
-    blast: 3.6*(b.blast||1),
+    blast: 3.6*(b.blast||1)*(1+.1*upLv("blast")),
     traps: 3+(b.trap||0)+upLv("trap")
   };
 }
@@ -98,7 +100,7 @@ function fxText(html,pos,cls=""){
   ftexts.push({el,p:pos.clone(),life:1.1,vy:2.6});
 }
 function addCombo(pos){
-  game.combo++;game.comboT=2;
+  game.combo++;game.comboT=2 + 0.4*upLv("combo");
   game.maxCombo=Math.max(game.maxCombo,game.combo);
   if(game.combo>=2){
     const c=$("#combo");
@@ -328,7 +330,10 @@ addEventListener("mousemove",e=>{
 addEventListener("mousedown",e=>{
   if(game.state!=="play")return;
   if(e.target.closest("button"))return;
-  if(e.button===0)playerFire();
+  if(e.button===0){keys["Mouse0"]=true;playerFire();}
+});
+addEventListener("mouseup",e=>{
+  if(e.button===0)keys["Mouse0"]=false;
 });
 addEventListener("contextmenu",e=>{
   if(game.state==="play"){e.preventDefault();tryPlaceTrap();}
@@ -336,6 +341,7 @@ addEventListener("contextmenu",e=>{
 document.addEventListener("pointerdown",()=>initAudio(),{once:false});
 
 function updateAim(){
+  if(!player||!$("#scrPause").classList.contains("hidden"))return;
   raycaster.setFromCamera(mouseNDC,camera);
   const hit=V3();
   if(raycaster.ray.intersectPlane(groundPlane,hit)){
@@ -372,7 +378,7 @@ function tryPlaceTrap(){
 }
 
 /* =========================================================
-   WAVES (sim side)
+   WAVES (sim side) — ENDLESS MODE
    ========================================================= */
 function announceW(title,sub,dur=1.4){
   const a=$("#announce");
@@ -381,7 +387,15 @@ function announceW(title,sub,dur=1.4){
   clearTimeout(a._t);
   a._t=setTimeout(()=>a.style.opacity=0,dur*1000);
 }
-function setWaveHUD(i){$("#wave").textContent="WAVE "+i;}
+function setWaveHUD(i){
+  const maxW=DIFFS[game.diff].maxWave;
+  if(maxW>0) {
+    $("#wave").textContent="WAVE "+i+"/"+maxW;
+  } else {
+    $("#wave").textContent="WAVE "+i;
+  }
+}
+function isEndless(){return DIFFS[game.diff].maxWave===0;}
 function startWave(i){
   game.wave=i;game.waveDone=false;
   setWaveHUD(i);
@@ -390,7 +404,8 @@ function startWave(i){
   const diff=DIFFS[game.diff];
   const q=[];
   
-  const inflateVal = i > 3 ? (i - 3) : 0;
+  // Inflation: after wave 3 (endless only), enemies multiply
+  const inflateVal = (isEndless() && i > 3) ? (i - 3) : 0;
   const countMult = 1 + inflateVal * 0.25;
   
   for(const k in def.mix){
@@ -400,11 +415,13 @@ function startWave(i){
   }
   for(let k=q.length-1;k>0;k--){const j=rndi(0,k);[q[k],q[j]]=[q[j],q[k]];}
   
-  if (i > 3) {
+  // Boss insertion
+  if (isEndless() && i > 3) {
     if (i % 3 === 0) {
       const numBosses = Math.floor(i / 3);
       for(let b=0; b<numBosses; b++) {
-        q.splice(rndi(2, q.length-2), 0, "boss");
+        const insertAt = rndi(2, Math.max(2, q.length-2));
+        q.splice(insertAt, 0, "boss");
       }
     }
   } else {
@@ -413,11 +430,11 @@ function startWave(i){
   
   game.spawnQueue=q;
   game.spawnT=.6;
-  game.spawnInterval= i > 3 ? Math.max(0.1, def.int / (1 + inflateVal * 0.18)) : def.int;
+  game.spawnInterval= (isEndless() && i > 3) ? Math.max(0.1, def.int / (1 + inflateVal * 0.18)) : def.int;
   
   let subtitle = i === 3 ? "ボスのにおいがする…！" : "リス軍団を ぜんぶ吹っとばせ！";
-  if (i > 3) {
-    subtitle = "インフレ中！生き延びろ！";
+  if (isEndless() && i > 3) {
+    subtitle = "エンドレス！生き延びろ！";
   }
   announceW("WAVE "+i+" 襲来!!", subtitle);
   sfx.fanfare();
@@ -430,19 +447,19 @@ function spawnSquirrel(kind){
   scene.add(g);
   const k=KINDS[kind],diff=DIFFS[game.diff];
   let hp=k.hp;
-  if (game.wave > 3) {
+  if (isEndless() && game.wave > 3) {
     hp = Math.round(hp * (1 + (game.wave - 3) * 0.25));
   }
   if(kind==="boss"){
     hp=BOSS_HP_BY_STAGE[game.stage];
     if(game.diff==="hard")hp=Math.round(hp*1.2);
     hp=Math.round(hp*(1+.35*(game.playersN-1)));
-    if (game.wave > 3) {
+    if (isEndless() && game.wave > 3) {
       hp = Math.round(hp * (1 + (game.wave - 3) * 0.3));
     }
   }
   let enemySpeed = rnd(k.spd[0],k.spd[1])*diff.spd;
-  if (game.wave > 3) {
+  if (isEndless() && game.wave > 3) {
     enemySpeed = enemySpeed * Math.min(2.0, 1 + (game.wave - 3) * 0.08);
   }
   squirrels.push({id:game.sqId++,g,v:V3(),spin:V3(),state:"run",kind,hp,
@@ -516,6 +533,7 @@ function updateSquirrels(dt){
           }
         }
       }
+      // Prevent stacking at bottom — push enemies that reach base radius outward if stuck
       if(dist<BASE_R+.6){
         const bonkDmg=s.kind==="tank"?2:s.kind==="boss"?3:1;
         damageBase(bonkDmg,p.clone().add(V3(0,1,0)));
@@ -613,6 +631,7 @@ function updateSquirrels(dt){
 
 /* guest-side squirrel ghosts */
 function applySnap(m){
+  console.log("applySnap called with:", m);
   const seen={};
   for(const e of m.sq){
     const [id,ki,x,y,z,st,ry]=e;
@@ -741,20 +760,29 @@ function updateAllies(dt){
     a.fireT-=dt;a.barkT-=dt;
     a.g.userData.tail.rotation.z=.5*Math.sin(game.time*9+a.ph);
     let near=null,nd=1e9;
-    for(const s of squirrels){
-      if(s.state==="pit"||s.state==="dead")continue;
-      const d=a.g.position.distanceTo(s.g.position);
-      if(d<nd){nd=d;near=s;}
+    if(isSim()){
+      for(const s of squirrels){
+        if(s.state==="pit"||s.state==="dead")continue;
+        const d=a.g.position.distanceTo(s.g.position);
+        if(d<nd){nd=d;near=s;}
+      }
+    }else{
+      for(const id in ghosts){
+        const s=ghosts[id];
+        if(s.state===3)continue;
+        const d=a.g.position.distanceTo(s.g.position);
+        if(d<nd){nd=d;near=s;}
+      }
     }
     if(near)a.g.lookAt(near.g.position.x,0,near.g.position.z);
     if(a.fireT<=0&&near&&nd<34){
       const T=clamp(nd/24,.32,.85);
       const dir=V3(-near.g.position.x,0,-near.g.position.z).normalize();
-      const lead=near.state==="run"?near.speed*T:0;
+      const lead=(near.state==="run"||near.state===0)?(near.speed||5)*T:0;
       const target=near.g.position.clone().addScaledVector(dir,lead);
       const waveDmgMult = 1 + Math.max(0, game.wave - 1) * 0.3;
       const waveBlastMult = 1 + Math.max(0, game.wave - 1) * 0.15;
-      fireBone(a.g.position.clone().add(V3(0,1.8,0)),target,{dmg:1.6*waveDmgMult,blast:3*waveBlastMult,live:true,send:game.mode==="host"});
+      fireBone(a.g.position.clone().add(V3(0,1.8,0)),target,{dmg:1.6*waveDmgMult,blast:3*waveBlastMult,live:isSim(),send:game.mode==="host"});
       a.fireT=1.25;
     }
     if(a.barkT<=0){
@@ -778,6 +806,7 @@ function updateRemotes(dt){
   }
 }
 function updatePlayer(dt){
+  if(!$("#scrPause").classList.contains("hidden"))return;
   const mv=V3();
   if(keys["KeyW"]||keys["ArrowUp"])mv.z-=1;
   if(keys["KeyS"]||keys["ArrowDown"])mv.z+=1;
@@ -801,6 +830,7 @@ function updatePlayer(dt){
   player.g.lookAt(player.aim.x,player.g.position.y,player.aim.z);
   player.fireCd=Math.max(0,player.fireCd-dt);
   player.barkCd=Math.max(0,player.barkCd-dt);
+  if(keys["Mouse0"])playerFire();
   $("#cd0").style.height=clamp(player.fireCd/player.stats.cd*100,0,100)+"%";
   $("#cd1").style.height=clamp(player.barkCd/player.stats.barkCd*100,0,100)+"%";
   player.g.userData.tail.rotation.x*=.9;
@@ -944,7 +974,7 @@ function pickHTML(type,key){
   if(type==="stage"){const s=STAGES[key];
     return '<span class="stg '+key+'"></span><b>'+s.label+"</b><span>"+s.desc+"</span>";}
   const dd=DIFFS[key];
-  const paws=icHTML.paw.repeat(key==="easy"?1:key==="normal"?2:3);
+  const paws=icHTML.paw.repeat(key==="easy"?1:key==="normal"?2:key==="hard"?3:4);
   return '<div class="paws">'+paws+'</div><b>'+dd.label+"</b><span>"+dd.desc+"</span>";
 }
 function renderPicker(elId,type,order,onPick){
@@ -975,7 +1005,7 @@ function renderShop(){
   UPORDER.forEach(k=>{
     const u=UPS[k],lv=upLv(k),cost=upCost(k,lv),maxed=lv>=u.max;
     const row=document.createElement("div");row.className="upRow";
-    let dots="";for(let i=0;i<u.max;i++)dots+='<i class="'+(i<lv?"on":"")+'"></i>';
+    let dots="";for(let i=0;i<u.max;i++)dots+='<i class="'+(i<lv?"on":"")+'">';
     row.innerHTML='<div class="nm"><b>'+u.label+'</b><span>'+u.desc+'</span></div>'+
       '<div class="lvDots">'+dots+'</div>'+
       '<button class="buyBtn" '+(maxed||SAVE.coins<cost?"disabled":"")+'>'+
@@ -989,7 +1019,6 @@ function renderShop(){
 }
 /* ---------- lobby ---------- */
 function lobbyInit(){
-  // $("#inServer").value=Net.defaultUrl();
   let nm="イヌタロウ";try{nm=localStorage.getItem("dsq_name")||nm;}catch(e){}
   $("#inName").value=nm;
   $("#lobbyConnect").classList.remove("hidden");
@@ -1032,7 +1061,8 @@ function renderRoom(){
       div.className="slot full";
       div.innerHTML=dogFaceHTML(p.breed||"shiba",true)+"<div>"+p.name+
         (i===0?'<span class="tag">ホスト</span>':"")+
-        (p.id===myId()?'<span class="tag" style="background:#2980b9">きみ</span>':"")+"</div>";
+        (p.id===myId()?'<span class="tag" style="background:#2980b9">きみ</span>':"")+
+        "</div>";
     }else{
       div.className="slot";div.textContent="あき";
     }
@@ -1073,8 +1103,11 @@ Net.handlers.close=()=>{
   if((game.state==="play"||game.state==="end")&&game.mode!=="solo"){
     cleanup();game.state="menu";game.mode="solo";
     $("#hud").classList.add("hidden");
-    renderMenu();show("#scrMenu");Music.play("menu");
-    announceW("せつぞくが切れた…","メニューにもどります",2);
+    // Return to lobby instead of menu for multiplayer
+    lobbyInit();
+    show("#scrLobby");
+    Music.play("menu");
+    announceW("せつぞくが切れた…","ルームにもどります",2);
   }else if(!$("#scrLobby").classList.contains("hidden")){
     lobbyInit();
   }
@@ -1084,9 +1117,14 @@ Net.handlers.close=()=>{
    GAME FLOW
    ========================================================= */
 function beginGame(cfg){
+  if(!scene){
+    alert("ゲーム画面(WebGL)の初期化に失敗しているため、ゲームを開始できません。ブラウザを再読み込みするか、LINEやDiscordなどのアプリ内ブラウザではなく、ChromeやSafariなどの標準ブラウザで開き直してください。");
+    return;
+  }
   cleanup();
   game.mode=cfg.mode;game.stage=cfg.stage;game.diff=cfg.diff;
   game.state="play";game.time=0;game.score=0;game.wave=0;game.kills=0;
+  $("#menuBtn").classList.remove("hidden");
   game.maxCombo=0;game.combo=0;game.comboT=0;game.timeScale=1;game.slowT=0;
   game.spawnQueue=[];game.waveDone=false;game.sqId=1;game.itemId=1;
   game.snapT=0;game.pinT=0;
@@ -1107,6 +1145,7 @@ function beginGame(cfg){
   player.trapStock=player.stats.traps;
   player.g.position.copy(player.pos);scene.add(player.g);
   
+  // NPC allies: always 2 at base + more from upgrades
   const allyLv = cfg.allyLv !== undefined ? cfg.allyLv : upLv("ally");
   const numAllies = 2 + allyLv;
   const hostBreed = (players[0] && players[0].breed) || cfg.breed;
@@ -1114,12 +1153,12 @@ function beginGame(cfg){
   for(let i=0; i<numAllies; i++){
     const b = others[i % others.length];
     const g = buildDog(b);
-    let px = 0, pz = 0;
-    if (i === 0) { px = -7; pz = 2; }
-    else if (i === 1) { px = 7; pz = 2; }
-    else if (i === 2) { px = -4; pz = -4; }
-    else { px = 4; pz = -4; }
-    const pos = V3(px,0,pz);
+    let apx = 0, apz = 0;
+    if (i === 0) { apx = -7; apz = 2; }
+    else if (i === 1) { apx = 7; apz = 2; }
+    else if (i === 2) { apx = -4; apz = -4; }
+    else { apx = 4; apz = -4; }
+    const pos = V3(apx,0,apz);
     g.position.copy(pos);scene.add(g);
     allies.push({g,pos,fireT:rnd(.3,.9),barkT:3+i*2,ph:i*2});
   }
@@ -1160,6 +1199,7 @@ function cleanup(){
   if(player){scene.remove(player.g);player=null;}
   $("#combo").style.opacity=0;
   $("#buffs").innerHTML="";
+  $("#menuBtn").classList.add("hidden");
   game.timeScale=1;game.slowT=0;game.shake=0;
 }
 function endGame(win){
@@ -1174,22 +1214,24 @@ function showResult(win,stats){
   game.state="end";game.timeScale=.25;
   if(win)sfx.big();else sfx.lose();
   const stageF={park:1,beach:1.15,snow:1.3}[game.stage]||1;
-  const diffF={easy:.8,normal:1,hard:1.3}[game.diff]||1;
+  const diffF={easy:.8,normal:1,hard:1.3,endless:1.5}[game.diff]||1;
   const norm=stats.sc/(stageF*diffF);
   const rank=!win?"-":norm>=4200?"S":norm>=3300?"A":norm>=2500?"B":"C";
-  const coins=Math.floor(stats.sc/15*DIFFS[game.diff].coin)+(win?Math.floor(200*DIFFS[game.diff].coin):0);
+  const coins=Math.floor(stats.sc/45*DIFFS[game.diff].coin)+(win?Math.floor(80*DIFFS[game.diff].coin):0);
   SAVE.coins+=coins;
   if(stats.sc>SAVE.bestScore)SAVE.bestScore=stats.sc;
   if(win)SAVE.wins=(SAVE.wins||0)+1;
   persist();
   setTimeout(()=>{
-    $("#resTitle").textContent=win?"公園防衛 大成功！":"公園がリスに占領された…";
+    $("#resTitle").textContent=win?"公園防衛 大成功！":
+      (game.diff==="endless"?"WAVE "+game.wave+" まで到達！":"公園がリスに占領された…");
     $("#resRank").textContent=rank;
     $("#resStats").innerHTML=
       "クリアタイム："+stats.tm.toFixed(1)+" 秒<br>"+
       icHTML.star+" スコア："+stats.sc+"　|　"+icHTML.squi+" 撃退数："+stats.kills+" 匹<br>"+
       "最大コンボ：×"+Math.max(stats.mc,1)+"　|　"+icHTML.house+" のこりHP："+stats.hp+" / "+game.baseMax+"<br>"+
       icHTML.coin+" かくとく ほねコイン：+"+coins;
+    // In multiplayer, show "back to room" instead of retry
     $("#btnRetry").classList.toggle("hidden",game.mode!=="solo");
     if(game.mode!=="solo"){
       $("#btnMenu").textContent="ルームにもどる";
@@ -1225,20 +1267,26 @@ function toMenu(){
 }
 
 /* ---------- buttons ---------- */
-$("#btnSolo").onclick=()=>{sfx.click();
+$("#btnSolo").onclick=()=>{
+  try{sfx.click();}catch(e){}
   renderPicker("#breedRow","breed",BREEDORDER);
   renderPicker("#stageRow","stage",STAGEORDER);
   renderPicker("#diffRow","diff",DIFFORDER);
-  show("#scrSetup");};
-$("#btnSetupBack").onclick=()=>{sfx.click();renderMenu();show("#scrMenu");};
+  show("#scrSetup");
+};
+$("#btnSetupBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
 $("#btnSetupGo").onclick=()=>{initAudio();
   beginGame({mode:"solo",breed:sel.breed,stage:sel.stage,diff:sel.diff});};
-$("#btnShop").onclick=()=>{sfx.click();renderShop();show("#scrShop");};
-$("#btnShopBack").onclick=()=>{sfx.click();renderMenu();show("#scrMenu");};
+$("#btnShop").onclick=()=>{try{sfx.click();}catch(e){}renderShop();show("#scrShop");};
+$("#btnShopBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
 $("#btnRetry").onclick=()=>beginGame({mode:"solo",breed:sel.breed,stage:sel.stage,diff:sel.diff});
 $("#btnMenu").onclick=()=>toMenu();
-$("#btnMulti").onclick=()=>{sfx.click();lobbyInit();show("#scrLobby");};
-$("#btnLobbyBack").onclick=()=>{sfx.click();Net.leave();renderMenu();show("#scrMenu");};
+$("#btnMulti").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  lobbyInit();
+  show("#scrLobby");
+};
+$("#btnLobbyBack").onclick=()=>{try{sfx.click();}catch(e){}Net.leave();renderMenu();show("#scrMenu");};
 $("#btnCreate").onclick=()=>lobbyConnect("create");
 $("#btnJoin").onclick=()=>lobbyConnect("join");
 $("#btnLeave").onclick=()=>{Net.leave();lobbyInit();};
@@ -1254,11 +1302,43 @@ $("#btnCopy").onclick=()=>{
 $("#btnStart").onclick=()=>{
   if(!Net.host)return;
   if(Net.players.length<2){$("#roomErr").textContent="ひとりだけ…？「ひとりで遊ぶ」もあるよ（このまま出撃もOK!）";}
-  Net.send({t:"start",stage:sel.stage,diff:sel.diff,allyLv:upLv("ally")});
-  beginGame({mode:"host",breed:sel.breed,stage:sel.stage,diff:sel.diff,players:Net.players});
+  try {
+    Net.send({t:"start",stage:sel.stage,diff:sel.diff,allyLv:upLv("ally")});
+  } catch(e) {}
+  try {
+    beginGame({mode:"host",breed:sel.breed,stage:sel.stage,diff:sel.diff,players:Net.players});
+  } catch(e) {
+    alert("beginGame error: " + e.stack);
+  }
 };
 function updMute(){$("#spkIc").classList.toggle("off",muted);}
 $("#muteBtn").onclick=e=>{e.stopPropagation();initAudio();setMute(!muted);updMute();};
+$("#menuBtn").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  show("#scrPause");
+};
+$("#btnResume").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  show(null);
+};
+$("#btnQuit").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  show(null);
+  endGame(false);
+};
+
+// Name modal button
+$("#btnNameOk").onclick=()=>{
+  const nameVal = ($("#inNameModal").value || "イヌ").slice(0,10);
+  try{localStorage.setItem("dsq_name",nameVal);}catch(e){}
+  lobbyInit();
+  $("#inName").value = nameVal;
+  const pendingRoom = $("#inNameModal").dataset.room;
+  if(pendingRoom){
+    $("#inCode").value = pendingRoom;
+  }
+  show("#scrLobby");
+};
 
 /* =========================================================
    MAIN LOOP & BOOT
@@ -1282,38 +1362,50 @@ function loop(){
   if(game.state==="play"){
     game.time+=dt;
     $("#timer").textContent=game.time.toFixed(1)+" s";
-    if(game.state==="play"){
-      game.time+=dt;
-      if(game.time>=900){
-        game.state="ending";
-        announceW("おやつの時間だ！", "飼い主が口笛を吹いて全員集めた！", 2.2);
-        sfx.fanfare();
-        setTimeout(()=>{
-          endGame(true);
-        },2200);
-      }
+    // 15 minute (900 sec) forced end by owner
+    if(game.time>=900 && game.state==="play"){
+      game.state="ending";
+      announceW("おやつの時間だ！", "飼い主が口笛を吹いて全員集めた！", 2.2);
+      sfx.fanfare();
+      setTimeout(()=>{
+        endGame(true);
+      },2200);
     }
     updateAim();
     updatePlayer(dt);
     updateBuffs(dt);
     updateRemotes(dt);
+    updateAllies(dt);
     if(isSim()){
-      updateAllies(dt);
       updateSquirrels(dt);
       if(game.spawnQueue.length>0){
         game.spawnT-=dt;
         if(game.spawnT<=0){spawnSquirrel(game.spawnQueue.shift());game.spawnT=game.spawnInterval;}
       }else if(squirrels.length===0&&!game.waveDone){
         game.waveDone=true;game.clearT=2.2;
-        announceW("WAVE "+game.wave+" クリア!","飼い主が なにか投げてくれるぞ!",1.2);
-        sfx.fanfare();
-        if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"clear",n:game.wave});
-        ownerThrowItem();
+        const maxW=DIFFS[game.diff].maxWave;
+        if(maxW>0 && game.wave>=maxW){
+          // Non-endless: game cleared after final wave
+          announceW("🎉 全WAVE クリア!","公園を守りぬいた！",2);
+          sfx.fanfare();confetti(V3(0,4,0));
+          if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"clear",n:game.wave});
+          setTimeout(()=>endGame(true),2200);
+        }else{
+          announceW("WAVE "+game.wave+" クリア!","飼い主が なにか投げてくれるぞ!",1.2);
+          sfx.fanfare();
+          if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"clear",n:game.wave});
+          ownerThrowItem();
+        }
       }
       if(game.waveDone){
-        game.clearT-=dt;
-        if(game.clearT<=0){
-          startWave(game.wave+1);
+        const maxW=DIFFS[game.diff].maxWave;
+        if(maxW>0 && game.wave>=maxW){
+          // Don't start next wave, game is ending
+        }else{
+          game.clearT-=dt;
+          if(game.clearT<=0){
+            startWave(game.wave+1);
+          }
         }
       }
       if(game.mode==="host"&&Net.connected){
@@ -1340,27 +1432,36 @@ function loop(){
   }
   updateFX(dt,rawDt);
   updateCamera(rawDt);
-  renderer.render(scene,camera);
+  if (renderer && scene && camera) {
+    renderer.render(scene,camera);
+  }
 }
 
-initWorld();
-buildStage("park");
+try {
+  initWorld();
+  buildStage("park");
+} catch(e) {
+  console.error("WebGL initialization failed:", e);
+}
 renderMenu();
 updMute();
 show("#scrMenu");
 Music.play("menu");
 loop();
 
-// URLに ?room=ABCD がある場合に自動で入室画面へ進む処理
+// URLに ?room=ABCD がある場合に名前入力画面を表示してから入室
 addEventListener("load", () => {
   const params = new URLSearchParams(location.search);
   const room = params.get("room");
   if (room && room.length === 4) {
     setTimeout(() => {
-      lobbyInit();
-      $("#inCode").value = room.toUpperCase();
-      show("#scrLobby");
-      $("#inName").focus();
-    }, 1000);
+      // Show name modal first
+      let savedName = "イヌタロウ";
+      try { savedName = localStorage.getItem("dsq_name") || savedName; } catch(e){}
+      $("#inNameModal").value = savedName;
+      $("#inNameModal").dataset.room = room.toUpperCase();
+      show("#scrNameModal");
+      $("#inNameModal").focus();
+    }, 800);
   }
 });

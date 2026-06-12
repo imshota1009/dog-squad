@@ -52,6 +52,10 @@ function shadowed(g){g.traverse(o=>{if(o.isMesh)o.castShadow=true;});return g;}
    STAGES
    ========================================================= */
 function buildStage(key){
+  if(!scene){
+    console.error("scene is undefined in buildStage");
+    return;
+  }
   if(stageGroup){scene.remove(stageGroup);}
   stageGroup=new THREE.Group();
   const st=STAGES[key];
