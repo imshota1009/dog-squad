@@ -84,9 +84,10 @@ const UPS={
   bark: {label:"メガボイス",      desc:"ワン波の範囲 +8%/Lv",       max:5, base:100},
   speed:{label:"俊足トレーニング", desc:"移動スピード +6%/Lv",      max:5, base:100},
   house:{label:"犬小屋補強",      desc:"犬小屋HP +2/Lv",            max:5, base:150},
-  trap: {label:"トラップ袋",      desc:"落とし穴ストック +1/Lv",    max:3, base:200}
+  trap: {label:"トラップ袋",      desc:"落とし穴ストック +1/Lv",    max:3, base:200},
+  ally: {label:"お助けわんちゃん",  desc:"いっしょに戦うNPC犬をふやす +1/Lv", max:2, base:250}
 };
-const UPORDER=["pow","rate","bark","speed","house","trap"];
+const UPORDER=["pow","rate","bark","speed","house","trap","ally"];
 const upCost=(k,lv)=>Math.round(UPS[k].base*Math.pow(lv+1,1.6));
 
 /* ---------- owner drop items ---------- */

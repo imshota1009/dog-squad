@@ -348,17 +348,21 @@ function updateAim(){
 }
 function playerFire(){
   if(!player||player.fireCd>0)return;
-  player.fireCd=player.stats.cd*(game.buffs.rapid>0?.55:1);
+  const waveCdMult = 1 / (1 + Math.max(0, game.wave - 1) * 0.2);
+  player.fireCd=player.stats.cd*(game.buffs.rapid>0?.55:1)*waveCdMult;
   const fwd=V3().subVectors(player.aim,player.pos);fwd.y=0;fwd.normalize();
   const from=player.pos.clone().add(fwd.clone().multiplyScalar(1.2)).add(V3(0,1.7,0));
-  const blast=player.stats.blast*(game.buffs.mega>0?1.45:1);
-  fireBone(from,player.aim,{dmg:player.stats.dmg,blast,live:isSim(),send:Net.connected});
+  const waveBlastMult = 1 + Math.max(0, game.wave - 1) * 0.15;
+  const blast=player.stats.blast*(game.buffs.mega>0?1.45:1)*waveBlastMult;
+  const waveDmgMult = 1 + Math.max(0, game.wave - 1) * 0.3;
+  fireBone(from,player.aim,{dmg:player.stats.dmg*waveDmgMult,blast,live:isSim(),send:Net.connected});
   player.g.userData.tail.rotation.x=1;
 }
 function doPlayerBark(){
   if(!player||player.barkCd>0)return;
   player.barkCd=player.stats.barkCd;
-  doBark(player.pos,player.stats.barkR,"ワンワンッ!!",Net.connected);
+  const waveBarkMult = 1 + Math.max(0, game.wave - 1) * 0.15;
+  doBark(player.pos,player.stats.barkR*waveBarkMult,"ワンワンッ!!",Net.connected);
 }
 function tryPlaceTrap(){
   if(!player||player.trapStock<=0){sfx.deny();return;}
@@ -377,21 +381,45 @@ function announceW(title,sub,dur=1.4){
   clearTimeout(a._t);
   a._t=setTimeout(()=>a.style.opacity=0,dur*1000);
 }
-function setWaveHUD(i){$("#wave").textContent="WAVE "+i+"/3";}
+function setWaveHUD(i){$("#wave").textContent="WAVE "+i;}
 function startWave(i){
-  game.wave=i;game.waveDone=false;game.itemGiven=false;
+  game.wave=i;game.waveDone=false;
   setWaveHUD(i);
-  const def=WAVES[game.stage][i-1];
+  const arr=WAVES[game.stage];
+  const def=arr[Math.min(i-1,arr.length-1)];
   const diff=DIFFS[game.diff];
   const q=[];
+  
+  const inflateVal = i > 3 ? (i - 3) : 0;
+  const countMult = 1 + inflateVal * 0.25;
+  
   for(const k in def.mix){
-    const n=Math.max(1,Math.round(def.mix[k]*diff.cnt*(1+.45*(game.playersN-1))));
+    const baseCount = def.mix[k];
+    const n=Math.max(1,Math.round(baseCount * countMult * diff.cnt*(1+.45*(game.playersN-1))));
     for(let j=0;j<n;j++)q.push(k);
   }
   for(let k=q.length-1;k>0;k--){const j=rndi(0,k);[q[k],q[j]]=[q[j],q[k]];}
-  if(def.boss)q.splice(rndi(2,5),0,"boss");
-  game.spawnQueue=q;game.spawnT=.6;game.spawnInterval=def.int;
-  announceW("WAVE "+i+" 襲来!!",i===3?"ボスのにおいがする…！":"リス軍団を ぜんぶ吹っとばせ！");
+  
+  if (i > 3) {
+    if (i % 3 === 0) {
+      const numBosses = Math.floor(i / 3);
+      for(let b=0; b<numBosses; b++) {
+        q.splice(rndi(2, q.length-2), 0, "boss");
+      }
+    }
+  } else {
+    if(def.boss)q.splice(rndi(2,5),0,"boss");
+  }
+  
+  game.spawnQueue=q;
+  game.spawnT=.6;
+  game.spawnInterval= i > 3 ? Math.max(0.1, def.int / (1 + inflateVal * 0.18)) : def.int;
+  
+  let subtitle = i === 3 ? "ボスのにおいがする…！" : "リス軍団を ぜんぶ吹っとばせ！";
+  if (i > 3) {
+    subtitle = "インフレ中！生き延びろ！";
+  }
+  announceW("WAVE "+i+" 襲来!!", subtitle);
   sfx.fanfare();
   if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"wave",n:i});
 }
@@ -402,13 +430,23 @@ function spawnSquirrel(kind){
   scene.add(g);
   const k=KINDS[kind],diff=DIFFS[game.diff];
   let hp=k.hp;
+  if (game.wave > 3) {
+    hp = Math.round(hp * (1 + (game.wave - 3) * 0.25));
+  }
   if(kind==="boss"){
     hp=BOSS_HP_BY_STAGE[game.stage];
     if(game.diff==="hard")hp=Math.round(hp*1.2);
     hp=Math.round(hp*(1+.35*(game.playersN-1)));
+    if (game.wave > 3) {
+      hp = Math.round(hp * (1 + (game.wave - 3) * 0.3));
+    }
+  }
+  let enemySpeed = rnd(k.spd[0],k.spd[1])*diff.spd;
+  if (game.wave > 3) {
+    enemySpeed = enemySpeed * Math.min(2.0, 1 + (game.wave - 3) * 0.08);
   }
   squirrels.push({id:game.sqId++,g,v:V3(),spin:V3(),state:"run",kind,hp,
-    r:k.r,speed:rnd(k.spd[0],k.spd[1])*diff.spd,
+    r:k.r,speed:enemySpeed,
     throwT:rnd(1,2.5)*diff.acorn,hop:rnd(0,6),flyT:0,pitT:0,throwAnim:0,trap:null,
     fy:k.fly||0});
   if(kind==="boss"){
@@ -714,11 +752,17 @@ function updateAllies(dt){
       const dir=V3(-near.g.position.x,0,-near.g.position.z).normalize();
       const lead=near.state==="run"?near.speed*T:0;
       const target=near.g.position.clone().addScaledVector(dir,lead);
-      fireBone(a.g.position.clone().add(V3(0,1.8,0)),target,{dmg:1.6,blast:3,live:true,send:false});
+      const waveDmgMult = 1 + Math.max(0, game.wave - 1) * 0.3;
+      const waveBlastMult = 1 + Math.max(0, game.wave - 1) * 0.15;
+      fireBone(a.g.position.clone().add(V3(0,1.8,0)),target,{dmg:1.6*waveDmgMult,blast:3*waveBlastMult,live:true,send:game.mode==="host"});
       a.fireT=1.25;
     }
     if(a.barkT<=0){
-      if(near&&nd<7.5){doBark(a.g.position,7,"ワンッ!!",false);a.barkT=7.5;}
+      if(near&&nd<7.5){
+        const waveBarkMult = 1 + Math.max(0, game.wave - 1) * 0.15;
+        doBark(a.g.position,7*waveBarkMult,"ワンッ!!",false);
+        a.barkT=7.5;
+      }
       else a.barkT=.4;
     }
   }
@@ -751,7 +795,7 @@ function updatePlayer(dt){
     player.g.position.y*=.8;
   }
   const r=Math.hypot(player.pos.x,player.pos.z);
-  if(r>27){player.pos.x*=27/r;player.pos.z*=27/r;}
+  if(r>37){player.pos.x*=37/r;player.pos.z*=37/r;}
   if(r<BASE_R+1&&r>.01){const k2=(BASE_R+1)/r;player.pos.x*=k2;player.pos.z*=k2;}
   player.g.position.x=player.pos.x;player.g.position.z=player.pos.z;
   player.g.lookAt(player.aim.x,player.g.position.y,player.aim.z);
@@ -1019,7 +1063,7 @@ Net.on("err",m=>{$("#lobbyErr").textContent=m.msg;$("#roomErr").textContent=m.ms
 Net.on("start",m=>{
   if(Net.host)return;
   sel.stage=m.stage;sel.diff=m.diff;
-  beginGame({mode:"guest",breed:sel.breed,stage:m.stage,diff:m.diff,players:m.players});
+  beginGame({mode:"guest",breed:sel.breed,stage:m.stage,diff:m.diff,players:m.players,allyLv:m.allyLv});
 });
 Net.on("pleave",m=>{
   if(remotes[m.id]){scene.remove(remotes[m.id].g);delete remotes[m.id];}
@@ -1062,15 +1106,25 @@ function beginGame(cfg){
     fireCd:0,barkCd:0,knockT:0,knockV:V3(),stats:calcStats(cfg.breed),trapStock:0};
   player.trapStock=player.stats.traps;
   player.g.position.copy(player.pos);scene.add(player.g);
-  if(cfg.mode==="solo"){
-    const others=BREEDORDER.filter(b=>b!==cfg.breed).slice(0,2);
-    others.forEach((b,i)=>{
-      const g=buildDog(b);
-      const pos=V3(i===0?-7:7,0,2);
-      g.position.copy(pos);scene.add(g);
-      allies.push({g,pos,fireT:rnd(.3,.9),barkT:3+i*2,ph:i*2});
-    });
-  }else{
+  
+  const allyLv = cfg.allyLv !== undefined ? cfg.allyLv : upLv("ally");
+  const numAllies = 2 + allyLv;
+  const hostBreed = (players[0] && players[0].breed) || cfg.breed;
+  const others = BREEDORDER.filter(b => b !== hostBreed);
+  for(let i=0; i<numAllies; i++){
+    const b = others[i % others.length];
+    const g = buildDog(b);
+    let px = 0, pz = 0;
+    if (i === 0) { px = -7; pz = 2; }
+    else if (i === 1) { px = 7; pz = 2; }
+    else if (i === 2) { px = -4; pz = -4; }
+    else { px = 4; pz = -4; }
+    const pos = V3(px,0,pz);
+    g.position.copy(pos);scene.add(g);
+    allies.push({g,pos,fireT:rnd(.3,.9),barkT:3+i*2,ph:i*2});
+  }
+  
+  if(cfg.mode!=="solo"){
     players.forEach((p,i)=>{
       if(p.id===myId())return;
       const a=i/6*Math.PI*2;
@@ -1137,9 +1191,29 @@ function showResult(win,stats){
       "最大コンボ：×"+Math.max(stats.mc,1)+"　|　"+icHTML.house+" のこりHP："+stats.hp+" / "+game.baseMax+"<br>"+
       icHTML.coin+" かくとく ほねコイン：+"+coins;
     $("#btnRetry").classList.toggle("hidden",game.mode!=="solo");
+    if(game.mode!=="solo"){
+      $("#btnMenu").textContent="ルームにもどる";
+      $("#btnMenu").onclick=()=>toLobby();
+    }else{
+      $("#btnMenu").textContent="メニューへ";
+      $("#btnMenu").onclick=()=>toMenu();
+    }
     $("#hud").classList.add("hidden");
     show("#scrResult");
   },1200);
+}
+function toLobby(){
+  cleanup();
+  game.state="menu";
+  if(Net.host){
+    const db = firebase.firestore();
+    db.collection("dog_squad_rooms").doc(Net.code).update({ started: false }).catch(e=>{});
+  }
+  renderRoom();
+  show("#scrLobby");
+  $("#lobbyConnect").classList.add("hidden");
+  $("#lobbyRoom").classList.remove("hidden");
+  Music.play("menu");
 }
 function toMenu(){
   cleanup();
@@ -1180,7 +1254,7 @@ $("#btnCopy").onclick=()=>{
 $("#btnStart").onclick=()=>{
   if(!Net.host)return;
   if(Net.players.length<2){$("#roomErr").textContent="ひとりだけ…？「ひとりで遊ぶ」もあるよ（このまま出撃もOK!）";}
-  Net.send({t:"start",stage:sel.stage,diff:sel.diff});
+  Net.send({t:"start",stage:sel.stage,diff:sel.diff,allyLv:upLv("ally")});
   beginGame({mode:"host",breed:sel.breed,stage:sel.stage,diff:sel.diff,players:Net.players});
 };
 function updMute(){$("#spkIc").classList.toggle("off",muted);}
@@ -1208,6 +1282,17 @@ function loop(){
   if(game.state==="play"){
     game.time+=dt;
     $("#timer").textContent=game.time.toFixed(1)+" s";
+    if(game.state==="play"){
+      game.time+=dt;
+      if(game.time>=900){
+        game.state="ending";
+        announceW("おやつの時間だ！", "飼い主が口笛を吹いて全員集めた！", 2.2);
+        sfx.fanfare();
+        setTimeout(()=>{
+          endGame(true);
+        },2200);
+      }
+    }
     updateAim();
     updatePlayer(dt);
     updateBuffs(dt);
@@ -1220,18 +1305,15 @@ function loop(){
         if(game.spawnT<=0){spawnSquirrel(game.spawnQueue.shift());game.spawnT=game.spawnInterval;}
       }else if(squirrels.length===0&&!game.waveDone){
         game.waveDone=true;game.clearT=2.2;
-        if(game.wave<3){
-          announceW("WAVE "+game.wave+" クリア!","飼い主が なにか投げてくれるぞ!",1.2);
-          sfx.fanfare();
-          if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"clear",n:game.wave});
-          ownerThrowItem();
-        }
+        announceW("WAVE "+game.wave+" クリア!","飼い主が なにか投げてくれるぞ!",1.2);
+        sfx.fanfare();
+        if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"clear",n:game.wave});
+        ownerThrowItem();
       }
       if(game.waveDone){
         game.clearT-=dt;
         if(game.clearT<=0){
-          if(game.wave<3)startWave(game.wave+1);
-          else endGame(true);
+          startWave(game.wave+1);
         }
       }
       if(game.mode==="host"&&Net.connected){
@@ -1278,9 +1360,7 @@ addEventListener("load", () => {
       lobbyInit();
       $("#inCode").value = room.toUpperCase();
       show("#scrLobby");
-      setTimeout(() => {
-        lobbyConnect("join");
-      }, 500);
+      $("#inName").focus();
     }, 1000);
   }
 });
