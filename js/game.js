@@ -277,7 +277,7 @@ function placeTrapAt(pos,send){
   traps.push({g,uses:3});
   sfx.dig();
   burst(V3(pos.x,.3,pos.z),0x8d6a4a,8,4,false,4);
-  fxText(icHTML.trap+" 落とし穴セット!",V3(pos.x,1.5,pos.z),"good");
+  fxText(icHTML.trap+" "+T("trapSet"),V3(pos.x,1.5,pos.z),"good");
   if(send&&Net.connected)Net.game({t:"trap",p:[pos.x,pos.z]});
   return true;
 }
