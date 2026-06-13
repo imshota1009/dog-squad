@@ -13,9 +13,12 @@ function persist(){try{localStorage.setItem("dsq_save",JSON.stringify(SAVE));}ca
 /* ---------- language ---------- */
 try{const l=localStorage.getItem("dsq_lang");if(l==="ja"||l==="en")curLang=l;}catch(e){}
 function applyLang(){
-  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=T(el.dataset.i18n));
+  // skip elements with child elements (handled separately below)
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    if(el.children.length===0)el.textContent=T(el.dataset.i18n);
+  });
   document.querySelectorAll("[data-i18n-html]").forEach(el=>el.innerHTML=T(el.dataset.i18nHtml));
-  // multi button special handling (disabled + sub text)
+  // btnMulti has inner <small> so handle text node directly
   const mb=$("#btnMulti");
   if(mb){
     const first=mb.childNodes[0];
@@ -23,6 +26,9 @@ function applyLang(){
     const sub=mb.querySelector("#btnMultiSub");
     if(sub)sub.textContent="🚧 "+T("btnMultiSub");
   }
+  // explicit critical UI labels
+  const menuBtnEl=document.getElementById("menuBtn");
+  if(menuBtnEl)menuBtnEl.textContent=T("menuBtn");
   // lang button sel state
   $("#btnLangJa").classList.toggle("sel",curLang==="ja");
   $("#btnLangEn").classList.toggle("sel",curLang==="en");
