@@ -4,11 +4,36 @@
    ========================================================= */
 
 /* ---------- persistent save ---------- */
-let SAVE=(()=>{ 
+let SAVE=(()=>{
   try{const s=JSON.parse(localStorage.getItem("dsq_save"));if(s&&s.up)return s;}catch(e){}
   return {coins:0,up:{},bestScore:0,wins:0};
 })();
 function persist(){try{localStorage.setItem("dsq_save",JSON.stringify(SAVE));}catch(e){}}
+
+/* ---------- language ---------- */
+try{const l=localStorage.getItem("dsq_lang");if(l==="ja"||l==="en")curLang=l;}catch(e){}
+function applyLang(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=T(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>el.innerHTML=T(el.dataset.i18nHtml));
+  // multi button special handling (disabled + sub text)
+  const mb=$("#btnMulti");
+  if(mb){
+    const first=mb.childNodes[0];
+    if(first&&first.nodeType===3)first.textContent=T("btnMulti");
+    const sub=mb.querySelector("#btnMultiSub");
+    if(sub)sub.textContent="🚧 "+T("btnMultiSub");
+  }
+  // lang button sel state
+  $("#btnLangJa").classList.toggle("sel",curLang==="ja");
+  $("#btnLangEn").classList.toggle("sel",curLang==="en");
+  // re-render pickers if visible
+  if(!$("#scrSetup").classList.contains("hidden")){
+    renderPicker("#breedRow","breed",BREEDORDER);
+    renderPicker("#stageRow","stage",STAGEORDER);
+    renderPicker("#diffRow","diff",DIFFORDER);
+  }
+  if(!$("#scrShop").classList.contains("hidden"))renderShop();
+}
 const upLv=k=>SAVE.up[k]||0;
 
 /* ---------- dom ---------- */
@@ -211,7 +236,7 @@ function bossDown(s){
   sfx.big();shakeCam(.8);
   const p=s.g.position.clone().add(V3(0,2,0));
   confetti(p);
-  fxText(icHTML.crown+" キング・どんぐり三世 げきは!!",p.clone().add(V3(0,2,0)),"big");
+  fxText(icHTML.crown+" "+T("bossDown"),p.clone().add(V3(0,2,0)),"big");
   addScore(1000,s.g.position);
   if(game.mode==="host"&&Net.connected)
     Net.game({t:"ev",k:"bossdown",p:[p.x,p.y,p.z]});
@@ -219,7 +244,7 @@ function bossDown(s){
 function bossDownFX(pos){
   game.timeScale=.22;game.slowT=1.1;
   sfx.big();shakeCam(.8);confetti(pos);
-  fxText(icHTML.crown+" キング・どんぐり三世 げきは!!",pos.clone().add(V3(0,2,0)),"big");
+  fxText(icHTML.crown+" "+T("bossDown"),pos.clone().add(V3(0,2,0)),"big");
 }
 function throwAcorn(from,target,big,send){
   const m=makeAcornMesh(big?.55:.3);m.position.copy(from);scene.add(m);
@@ -290,12 +315,13 @@ function spawnItem(id,ty,pos){
   g.position.copy(from);scene.add(g);
   items.push({id,ty,g,from,to:pos.clone(),t:0,phase:"fly"});
   game.ownerWaveT=1.6;
-  fxText("飼い主「ほら、つかえ!」",from.clone().add(V3(0,1.5,0)),"good");
+  fxText(T("ownerToss"),from.clone().add(V3(0,1.5,0)),"good");
 }
 function applyItem(ty,pos){
   const it=ITEMS[ty];
   sfx.pickup();
-  fxText((ty==="meat"?icHTML.meat:ty==="dash"?icHTML.flash:ty==="rapid"?icHTML.bone:ty==="mega"?icHTML.blast:icHTML.trap)+" "+it.label,pos.clone().add(V3(0,2,0)),"big good");
+  const itLabel=curLang==="en"&&it.label_en?it.label_en:it.label;
+  fxText((ty==="meat"?icHTML.meat:ty==="dash"?icHTML.flash:ty==="rapid"?icHTML.bone:ty==="mega"?icHTML.blast:icHTML.trap)+" "+itLabel,pos.clone().add(V3(0,2,0)),"big good");
   if(ty==="meat"){if(isSim())healBase(3);}
   else if(ty==="trapup"){player.trapStock++;updTrapHUD();}
   else game.buffs[ty]=it.dur;
@@ -305,7 +331,7 @@ function pickupItem(item,byMe,byId){
   scene.remove(item.g);
   items.splice(items.indexOf(item),1);
   if(byMe)applyItem(item.ty,item.g.position);
-  else fxText("なかまが アイテムゲット!",item.g.position.clone().add(V3(0,2,0)),"good");
+  else fxText(T("allyGotItem"),item.g.position.clone().add(V3(0,2,0)),"good");
   if(game.mode==="host"&&Net.connected)
     Net.game({t:"ev",k:"got",id:item.id,by:byId,ty:item.ty,p:[item.g.position.x,item.g.position.z]});
 }
@@ -432,11 +458,11 @@ function startWave(i){
   game.spawnT=.6;
   game.spawnInterval= (isEndless() && i > 3) ? Math.max(0.1, def.int / (1 + inflateVal * 0.18)) : def.int;
   
-  let subtitle = def.boss ? "ボスのにおいがする…！" : "リス軍団を ぜんぶ吹っとばせ！";
+  let subtitle = def.boss ? T("announceWaveBoss") : T("announceWaveSub");
   if (isEndless() && i > 3) {
-    subtitle = "エンドレス！生き延びろ！";
+    subtitle = T("announceWaveSub");
   }
-  announceW("WAVE "+i+" 襲来!!", subtitle);
+  announceW("WAVE "+i+(curLang==="en"?" INCOMING!!":" 襲来!!"), subtitle);
   sfx.fanfare();
   if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"wave",n:i,boss:!!def.boss});
 }
@@ -467,7 +493,7 @@ function spawnSquirrel(kind){
     throwT:rnd(1,2.5)*diff.acorn,hop:rnd(0,6),flyT:0,pitT:0,throwAnim:0,trap:null,
     fy:k.fly||0});
   if(kind==="boss"){
-    announceW(icHTML.crown+" ボス出現!!","キング・どんぐり三世のおでまし",1.6);
+    announceW(icHTML.crown+" "+T("bossAppear"),T("bossAppearSub"),1.6);
     shakeCam(.4);sfx.bonk();
   }
 }
@@ -951,13 +977,13 @@ function handleEv(d){
       }
       const p=V3(d.p[0],1,d.p[1]);
       if(d.by===myId())applyItem(d.ty,p);
-      else fxText("なかまが アイテムゲット!",p.clone().add(V3(0,2,0)),"good");
+      else fxText(T("allyGotItem"),p.clone().add(V3(0,2,0)),"good");
       break;
     }
     case "wave":game.wave=d.n;setWaveHUD(d.n);
       announceW("WAVE "+d.n+" 襲来!!",d.boss?"ボスのにおいがする…！":"リス軍団を ぜんぶ吹っとばせ！");
       sfx.fanfare();break;
-    case "clear":announceW("WAVE "+d.n+" クリア!","つぎが来るぞ…!",1.2);sfx.fanfare();break;
+    case "clear":announceW("WAVE "+d.n+" "+T("waveClearShort"),T("waveNextComing"),1.2);sfx.fanfare();break;
     case "bossdown":bossDownFX(V3(d.p[0],d.p[1],d.p[2]));break;
     case "base":setBaseHp(d.hp);shakeCam(.3);sfx.hurt();break;
     case "trapgone":removeTrapNear(V3(d.p[0],0,d.p[1]));break;
@@ -970,12 +996,18 @@ function handleEv(d){
    ========================================================= */
 function pickHTML(type,key){
   if(type==="breed"){const b=BREEDS[key];
-    return dogFaceHTML(key)+"<b>"+b.label+"</b><span>"+b.role+"</span>";}
+    const lbl=curLang==="en"&&b.label_en?b.label_en:b.label;
+    const rol=curLang==="en"&&b.role_en?b.role_en:b.role;
+    return dogFaceHTML(key)+"<b>"+lbl+"</b><span>"+rol+"</span>";}
   if(type==="stage"){const s=STAGES[key];
-    return '<span class="stg '+key+'"></span><b>'+s.label+"</b><span>"+s.desc+"</span>";}
+    const lbl=curLang==="en"&&s.label_en?s.label_en:s.label;
+    const dsc=curLang==="en"&&s.desc_en?s.desc_en:s.desc;
+    return '<span class="stg '+key+'"></span><b>'+lbl+"</b><span>"+dsc+"</span>";}
   const dd=DIFFS[key];
+  const lbl=curLang==="en"&&dd.label_en?dd.label_en:dd.label;
+  const dsc=curLang==="en"&&dd.desc_en?dd.desc_en:dd.desc;
   const paws=icHTML.paw.repeat(key==="easy"?1:key==="normal"?2:key==="hard"?3:4);
-  return '<div class="paws">'+paws+'</div><b>'+dd.label+"</b><span>"+dd.desc+"</span>";
+  return '<div class="paws">'+paws+'</div><b>'+lbl+"</b><span>"+dsc+"</span>";
 }
 function renderPicker(elId,type,order,onPick){
   const el=$(elId);el.innerHTML="";
@@ -1006,7 +1038,9 @@ function renderShop(){
     const u=UPS[k],lv=upLv(k),cost=upCost(k,lv),maxed=lv>=u.max;
     const row=document.createElement("div");row.className="upRow";
     let dots="";for(let i=0;i<u.max;i++)dots+='<i class="'+(i<lv?"on":"")+'">';
-    row.innerHTML='<div class="nm"><b>'+u.label+'</b><span>'+u.desc+'</span></div>'+
+    const uLabel=curLang==="en"&&u.label_en?u.label_en:u.label;
+    const uDesc=curLang==="en"&&u.desc_en?u.desc_en:u.desc;
+    row.innerHTML='<div class="nm"><b>'+uLabel+'</b><span>'+uDesc+'</span></div>'+
       '<div class="lvDots">'+dots+'</div>'+
       '<button class="buyBtn" '+(maxed||SAVE.coins<cost?"disabled":"")+'>'+
       (maxed?"MAX":cost+" コイン")+'</button>';
@@ -1223,21 +1257,22 @@ function showResult(win,stats){
   if(win)SAVE.wins=(SAVE.wins||0)+1;
   persist();
   setTimeout(()=>{
-    $("#resTitle").textContent=win?"公園防衛 大成功！":
-      (game.diff==="endless"?"WAVE "+game.wave+" まで到達！":"公園がリスに占領された…");
+    if(win) $("#resTitle").textContent=T("resWin");
+    else if(game.diff==="endless") $("#resTitle").textContent="WAVE "+game.wave+" "+T("resEndless");
+    else $("#resTitle").textContent=T("resLose");
     $("#resRank").textContent=rank;
     $("#resStats").innerHTML=
-      "クリアタイム："+stats.tm.toFixed(1)+" 秒<br>"+
-      icHTML.star+" スコア："+stats.sc+"　|　"+icHTML.squi+" 撃退数："+stats.kills+" 匹<br>"+
-      "最大コンボ：×"+Math.max(stats.mc,1)+"　|　"+icHTML.house+" のこりHP："+stats.hp+" / "+game.baseMax+"<br>"+
-      icHTML.coin+" かくとく ほねコイン：+"+coins;
+      T("resClearTime")+stats.tm.toFixed(1)+" "+T("resSec")+"<br>"+
+      icHTML.star+" "+T("resScore")+stats.sc+"　|　"+icHTML.squi+" "+T("resKills")+stats.kills+" "+T("resUnits")+"<br>"+
+      T("resCombo")+Math.max(stats.mc,1)+"　|　"+icHTML.house+" "+T("resHp")+stats.hp+" / "+game.baseMax+"<br>"+
+      icHTML.coin+" "+T("resCoins")+coins;
     // In multiplayer, show "back to room" instead of retry
     $("#btnRetry").classList.toggle("hidden",game.mode!=="solo");
     if(game.mode!=="solo"){
-      $("#btnMenu").textContent="ルームにもどる";
+      $("#btnMenu").textContent=T("btnToRoom");
       $("#btnMenu").onclick=()=>toLobby();
     }else{
-      $("#btnMenu").textContent="メニューへ";
+      $("#btnMenu").textContent=T("btnToMenu");
       $("#btnMenu").onclick=()=>toMenu();
     }
     $("#hud").classList.add("hidden");
@@ -1279,6 +1314,47 @@ $("#btnSetupGo").onclick=()=>{initAudio();
   beginGame({mode:"solo",breed:sel.breed,stage:sel.stage,diff:sel.diff});};
 $("#btnShop").onclick=()=>{try{sfx.click();}catch(e){}renderShop();show("#scrShop");};
 $("#btnShopBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
+$("#btnSettings").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  $("#sliderBgm").value=Math.round(_bgmVol*100);
+  $("#valBgm").textContent=Math.round(_bgmVol*100)+"%";
+  $("#sliderSfx").value=Math.round(_sfxVol*100);
+  $("#valSfx").textContent=Math.round(_sfxVol*100)+"%";
+  show("#scrSettings");
+};
+$("#btnSettingsBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
+$("#btnLangJa").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  curLang="ja";try{localStorage.setItem("dsq_lang","ja");}catch(e){}
+  applyLang();
+};
+$("#btnLangEn").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  curLang="en";try{localStorage.setItem("dsq_lang","en");}catch(e){}
+  applyLang();
+};
+$("#sliderBgm").oninput=function(){
+  const v=parseInt(this.value)/100;
+  setBgmVol(v);
+  $("#valBgm").textContent=this.value+"%";
+};
+$("#sliderSfx").oninput=function(){
+  const v=parseInt(this.value)/100;
+  setSfxVol(v);
+  $("#valSfx").textContent=this.value+"%";
+};
+$("#btnFullscreen").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }else{
+    document.exitFullscreen().catch(()=>{});
+  }
+};
+document.addEventListener("fullscreenchange",()=>{
+  const btn=$("#btnFullscreen");
+  if(btn)btn.textContent=document.fullscreenElement?T("fsOff"):T("fsOn");
+});
 $("#btnRetry").onclick=()=>beginGame({mode:"solo",breed:sel.breed,stage:sel.stage,diff:sel.diff});
 $("#btnMenu").onclick=()=>toMenu();
 $("#btnMulti").onclick=()=>{
@@ -1365,7 +1441,7 @@ function loop(){
     // 15 minute (900 sec) forced end by owner
     if(game.time>=900 && game.state==="play"){
       game.state="ending";
-      announceW("おやつの時間だ！", "飼い主が口笛を吹いて全員集めた！", 2.2);
+      announceW(T("snackTime"), T("snackTimeSub"), 2.2);
       sfx.fanfare();
       setTimeout(()=>{
         endGame(true);
@@ -1386,12 +1462,12 @@ function loop(){
         const maxW=DIFFS[game.diff].maxWave;
         if(maxW>0 && game.wave>=maxW){
           // Non-endless: game cleared after final wave
-          announceW("🎉 全WAVE クリア!","公園を守りぬいた！",2);
+          announceW(T("allClear"),T("allClearSub"),2);
           sfx.fanfare();confetti(V3(0,4,0));
           if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"clear",n:game.wave});
           setTimeout(()=>endGame(true),2200);
         }else{
-          announceW("WAVE "+game.wave+" クリア!","飼い主が なにか投げてくれるぞ!",1.2);
+          announceW("WAVE "+game.wave+" "+T("waveClearShort"),T("waveClearSub"),1.2);
           sfx.fanfare();
           if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"clear",n:game.wave});
           ownerThrowItem();
@@ -1445,6 +1521,7 @@ try {
 }
 renderMenu();
 updMute();
+applyLang();
 show("#scrMenu");
 Music.play("menu");
 loop();

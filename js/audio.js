@@ -2,14 +2,16 @@
 /* =========================================================
    AUDIO — WebAudio synth SFX + chiptune music sequencer
    ========================================================= */
-let actx=null,master=null,musGain=null,noiseBuf=null,muted=false;
+let actx=null,master=null,sfxGain=null,musGain=null,noiseBuf=null,muted=false;
+let _bgmVol=.55,_sfxVol=.9;
 
 function initAudio(){
   if(actx)return;
   const AC=window.AudioContext||window.webkitAudioContext;
   actx=new AC();
-  master=actx.createGain();master.gain.value=muted?0:.45;master.connect(actx.destination);
-  musGain=actx.createGain();musGain.gain.value=.55;musGain.connect(master);
+  master=actx.createGain();master.gain.value=muted?0:1;master.connect(actx.destination);
+  sfxGain=actx.createGain();sfxGain.gain.value=_sfxVol*.5;sfxGain.connect(master);
+  musGain=actx.createGain();musGain.gain.value=_bgmVol*.6;musGain.connect(master);
   noiseBuf=actx.createBuffer(1,actx.sampleRate*.5,actx.sampleRate);
   const d=noiseBuf.getChannelData(0);
   for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
@@ -17,8 +19,18 @@ function initAudio(){
 }
 function setMute(m){
   muted=m;
-  if(master)master.gain.value=m?0:.45;
+  if(master)master.gain.value=m?0:1;
   try{localStorage.setItem("dsq_mute",m?"1":"0");}catch(e){}
+}
+function setBgmVol(v){
+  _bgmVol=clamp(v,0,1);
+  if(musGain&&!muted)musGain.gain.value=_bgmVol*.6;
+  try{localStorage.setItem("dsq_bgm_vol",_bgmVol);}catch(e){}
+}
+function setSfxVol(v){
+  _sfxVol=clamp(v,0,1);
+  if(sfxGain&&!muted)sfxGain.gain.value=_sfxVol*.5;
+  try{localStorage.setItem("dsq_sfx_vol",_sfxVol);}catch(e){}
 }
 function tone(f0,f1,dur,type,vol,when=0,dest){
   if(!actx)return;
@@ -28,7 +40,7 @@ function tone(f0,f1,dur,type,vol,when=0,dest){
   o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur);
   gn.gain.setValueAtTime(vol,t);
   gn.gain.exponentialRampToValueAtTime(.001,t+dur);
-  o.connect(gn);gn.connect(dest||master);o.start(t);o.stop(t+dur+.02);
+  o.connect(gn);gn.connect(dest||sfxGain);o.start(t);o.stop(t+dur+.02);
 }
 function noiseHit(dur,vol,fc,when=0,dest){
   if(!actx)return;
@@ -37,7 +49,7 @@ function noiseHit(dur,vol,fc,when=0,dest){
   const f=actx.createBiquadFilter();f.type="lowpass";f.frequency.value=fc;
   const gn=actx.createGain();gn.gain.setValueAtTime(vol,t);
   gn.gain.exponentialRampToValueAtTime(.001,t+dur);
-  s.connect(f);f.connect(gn);gn.connect(dest||master);s.start(t);s.stop(t+dur+.02);
+  s.connect(f);f.connect(gn);gn.connect(dest||sfxGain);s.start(t);s.stop(t+dur+.02);
 }
 const sfx={
   shoot(){tone(380,720,.09,"sine",.3);noiseHit(.05,.12,3000);},
@@ -75,7 +87,7 @@ const Music={
   },
   tick(){
     const d=this.cur;if(!d||!actx)return;
-    const spb=60/d.bpm/2; // 8th note
+    const spb=60/d.bpm/2;
     while(this.next<actx.currentTime+.22){
       const i=this.step%d.lead.length;
       const when=Math.max(0,this.next-actx.currentTime);
@@ -96,4 +108,10 @@ const Music={
     this.cur=null;this.curName=null;
   }
 };
-try{muted=localStorage.getItem("dsq_mute")==="1";}catch(e){}
+try{
+  muted=localStorage.getItem("dsq_mute")==="1";
+  const bv=parseFloat(localStorage.getItem("dsq_bgm_vol"));
+  const sv=parseFloat(localStorage.getItem("dsq_sfx_vol"));
+  if(!isNaN(bv))_bgmVol=clamp(bv,0,1);
+  if(!isNaN(sv))_sfxVol=clamp(sv,0,1);
+}catch(e){}

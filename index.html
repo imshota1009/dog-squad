@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DOG SQUAD vs SQUIRREL INVASION</title>
-<link rel="stylesheet" href="css/style.css?v=10">
+<title>DOG SQUAD: SQUIRREL SIEGE</title>
+<link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
 <div id="game"></div>
@@ -15,8 +15,8 @@
 <!-- ============ HUD ============ -->
 <div id="hud" class="hidden">
   <div id="hpwrap"><i class="ic house"></i><div id="hpbar"><div id="hpfill"></div></div></div>
-  <div id="wavebox"><span id="wave">WAVE 1</span><span id="timer">0.0 s</span></div>
   <div id="scorebox"><em>SCORE</em><span id="score">0</span></div>
+  <div id="wavebox"><span id="wave">WAVE 1</span><span id="timer">0.0 s</span></div>
   <div id="buffs"></div>
   <div id="skills">
     <div class="sk"><i class="ic bone"></i><small>クリック</small><div class="cd" id="cd0"></div></div>
@@ -31,20 +31,24 @@
 <!-- ============ MENU ============ -->
 <div id="scrMenu" class="scr">
   <div class="panel">
-    <div class="logo">DOG SQUAD <span class="vs">VS</span> SQUIRREL INVASION</div>
-    <div class="sub">どんぐり武装のリス軍団から、ぼくらの公園を守りぬけ！</div>
+    <div class="logo">DOG SQUAD</div>
+    <div class="logoSub">SQUIRREL SIEGE</div>
+    <div class="sub" data-i18n="gameSub">どんぐり武装のリス軍団から、わんこ隊で公園を守りぬけ！</div>
     <div class="menuDogs">
       <span class="dogface shiba"><i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i><i class="feye l"></i><i class="feye r"></i></span>
       <span class="dogface golden"><i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i><i class="feye l"></i><i class="feye r"></i></span>
       <span class="dogface dal"><i class="ear l"></i><i class="ear r"></i><i class="fmuz"></i><i class="feye l"></i><i class="feye r"></i></span>
     </div>
-    <div class="coinrow"><i class="ic coin"></i><span id="menuCoins">0</span> ほねコイン　|　ハイスコア <span id="menuBest">0</span></div>
+    <div class="coinrow"><i class="ic coin"></i><span id="menuCoins">0</span> <span data-i18n="coinLabel">ほねコイン</span>　|　<span data-i18n="hiscoreLabel">ハイスコア</span> <span id="menuBest">0</span></div>
     <div class="mainBtns">
-      <button class="go" id="btnSolo">ひとりで遊ぶ</button>
-      <button class="go blue" id="btnMulti" disabled style="opacity:.5;cursor:default;box-shadow:0 7px 0 #14478c">みんなで遊ぶ（最大6人）<br><small style="font-size:14px;font-weight:700">🚧 準備中</small></button>
-      <button class="go green" id="btnShop">飼い主のショップ</button>
+      <button class="go" id="btnSolo" data-i18n="btnSolo">ひとりで遊ぶ</button>
+      <button class="go blue" id="btnMulti" disabled style="opacity:.5;cursor:default;box-shadow:0 7px 0 #14478c">みんなで遊ぶ（最大6人）<br><small style="font-size:14px;font-weight:700" id="btnMultiSub">🚧 準備中</small></button>
+      <button class="go green" id="btnShop" data-i18n="btnShop">飼い主のショップ</button>
     </div>
-    <div class="ctrl">WASD / 矢印キー：移動　|　マウス：ねらう　|　クリック：骨ミサイル<br>
+    <div style="margin-top:10px">
+      <button class="btn2" id="btnSettings" data-i18n="btnSettings">⚙ 設定</button>
+    </div>
+    <div class="ctrl" id="ctrlText" data-i18n-html="ctrlText">WASD / 矢印キー：移動　|　マウス：ねらう　|　クリック：骨ミサイル<br>
       SPACE：ワン!衝撃波　|　E / 右クリック：落とし穴　|　犬小屋を守れ！</div>
   </div>
 </div>
@@ -65,16 +69,16 @@
 <!-- ============ SOLO SETUP ============ -->
 <div id="scrSetup" class="scr hidden">
   <div class="panel">
-    <div class="h2">そうびを ととのえよう</div>
-    <div class="h2" style="font-size:18px">わんちゃんを えらぶ</div>
+    <div class="h2" data-i18n="setupTitle">そうびを ととのえよう</div>
+    <div class="h2" style="font-size:18px" data-i18n="pickBreed">わんちゃんを えらぶ</div>
     <div class="pickRow" id="breedRow"></div>
-    <div class="h2" style="font-size:18px">ステージを えらぶ</div>
+    <div class="h2" style="font-size:18px" data-i18n="pickStage">ステージを えらぶ</div>
     <div class="pickRow" id="stageRow"></div>
-    <div class="h2" style="font-size:18px">むずかしさを えらぶ</div>
+    <div class="h2" style="font-size:18px" data-i18n="pickDiff">むずかしさを えらぶ</div>
     <div class="pickRow" id="diffRow"></div>
     <div style="margin-top:18px">
-      <button class="btn2" id="btnSetupBack">もどる</button>
-      <button class="go" id="btnSetupGo" style="margin-left:14px">しゅつげき！</button>
+      <button class="btn2" id="btnSetupBack" data-i18n="btnBack">もどる</button>
+      <button class="go" id="btnSetupGo" style="margin-left:14px" data-i18n="btnGo">しゅつげき！</button>
     </div>
   </div>
 </div>
@@ -82,12 +86,11 @@
 <!-- ============ LOBBY ============ -->
 <div id="scrLobby" class="scr hidden">
   <div class="panel">
-    <div class="h2">みんなで遊ぶ — ルーム</div>
+    <div class="h2" data-i18n="lobbyTitle">みんなで遊ぶ — ルーム</div>
     <div id="lobbyConnect">
       <div class="netrow">
         なまえ：<input class="txt" id="inName" maxlength="10" placeholder="イヌタロウ">
       </div>
-      
       <div class="netrow">
         <button class="go green" id="btnCreate" style="min-width:240px">ルームを作る</button>
       </div>
@@ -96,20 +99,19 @@
         <button class="go blue" id="btnJoin" style="min-width:240px">あいことばで参加</button>
       </div>
       <div class="errmsg" id="lobbyErr"></div>
-      
-      <div style="margin-top:12px"><button class="btn2" id="btnLobbyBack">もどる</button></div>
+      <div style="margin-top:12px"><button class="btn2" id="btnLobbyBack" data-i18n="btnBack">もどる</button></div>
     </div>
     <div id="lobbyRoom" class="hidden">
       <div>あいことば</div>
       <div class="roomCode" id="roomCode">----</div>
       <button class="btn2" id="btnCopy">URLをコピー</button>
       <div class="slots" id="slots"></div>
-      <div class="h2" style="font-size:18px">じぶんの わんちゃん</div>
+      <div class="h2" style="font-size:18px" data-i18n="pickBreed">じぶんの わんちゃん</div>
       <div class="pickRow" id="breedRowL"></div>
       <div id="hostCfg">
-        <div class="h2" style="font-size:18px">ステージ</div>
+        <div class="h2" style="font-size:18px" data-i18n="pickStage">ステージ</div>
         <div class="pickRow" id="stageRowL"></div>
-        <div class="h2" style="font-size:18px">むずかしさ</div>
+        <div class="h2" style="font-size:18px" data-i18n="pickDiff">むずかしさ</div>
         <div class="pickRow" id="diffRowL"></div>
       </div>
       <div class="errmsg" id="roomErr"></div>
@@ -125,10 +127,10 @@
 <!-- ============ PAUSE MENU ============ -->
 <div id="scrPause" class="scr hidden">
   <div class="panel" style="max-width:300px;margin-top:10%">
-    <div class="h2">メニュー</div>
+    <div class="h2" data-i18n="pauseTitle">メニュー</div>
     <div class="mainBtns" style="margin-top:20px">
-      <button class="go" id="btnResume" style="min-width:200px;font-size:20px;padding:8px 20px">ゲームにもどる</button>
-      <button class="go blue" id="btnQuit" style="min-width:200px;font-size:20px;padding:8px 20px;box-shadow:0 5px 0 #14478c">あきらめる（終了）</button>
+      <button class="go" id="btnResume" data-i18n="btnResume" style="min-width:200px;font-size:20px;padding:8px 20px">ゲームにもどる</button>
+      <button class="go blue" id="btnQuit" data-i18n="btnQuit" style="min-width:200px;font-size:20px;padding:8px 20px;box-shadow:0 5px 0 #14478c">あきらめる（終了）</button>
     </div>
   </div>
 </div>
@@ -136,8 +138,8 @@
 <!-- ============ SHOP ============ -->
 <div id="scrShop" class="scr hidden">
   <div class="panel">
-    <div class="h2">飼い主のショップ — 永続パワーアップ</div>
-    <div class="coinrow"><i class="ic coin"></i><span id="shopCoins">0</span> ほねコイン</div>
+    <div class="h2" data-i18n="shopTitle">飼い主のショップ — 永続パワーアップ</div>
+    <div class="coinrow"><i class="ic coin"></i><span id="shopCoins">0</span> <span data-i18n="coinLabel">ほねコイン</span></div>
     <div class="shopGrid">
       <div class="shopOwner">
         <div class="ownerArt">
@@ -153,7 +155,47 @@
       </div>
       <div class="upList" id="upList"></div>
     </div>
-    <div style="margin-top:16px"><button class="btn2" id="btnShopBack">もどる</button></div>
+    <div style="margin-top:16px"><button class="btn2" id="btnShopBack" data-i18n="btnBack">もどる</button></div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div id="scrSettings" class="scr hidden">
+  <div class="panel" style="max-width:500px">
+    <div class="h2" data-i18n="settingsTitle">設定</div>
+
+    <div class="settingRow">
+      <label data-i18n="langLabel">言語 / Language</label>
+      <div class="langBtns">
+        <button class="langBtn sel" id="btnLangJa">日本語</button>
+        <button class="langBtn" id="btnLangEn">English</button>
+      </div>
+    </div>
+
+    <div class="settingRow">
+      <label data-i18n="bgmLabel">BGM 音量</label>
+      <div class="sliderWrap">
+        <input type="range" class="volSlider" id="sliderBgm" min="0" max="100" value="55">
+        <span class="volVal" id="valBgm">55%</span>
+      </div>
+    </div>
+
+    <div class="settingRow">
+      <label data-i18n="sfxLabel">効果音量</label>
+      <div class="sliderWrap">
+        <input type="range" class="volSlider" id="sliderSfx" min="0" max="100" value="90">
+        <span class="volVal" id="valSfx">90%</span>
+      </div>
+    </div>
+
+    <div class="settingRow">
+      <label data-i18n="fsLabel">フルスクリーン</label>
+      <button class="btn2" id="btnFullscreen" data-i18n="fsOn">ON にする</button>
+    </div>
+
+    <div style="margin-top:28px">
+      <button class="btn2" id="btnSettingsBack" data-i18n="btnBack">もどる</button>
+    </div>
   </div>
 </div>
 
@@ -164,8 +206,8 @@
     <div id="resRank">S</div>
     <div id="resStats"></div>
     <div class="resBtns">
-      <button class="go" id="btnRetry">もういちど！</button>
-      <button class="go blue" id="btnMenu">メニューへ</button>
+      <button class="go" id="btnRetry" data-i18n="btnRetry">もういちど！</button>
+      <button class="go blue" id="btnMenu" data-i18n="btnToMenu">メニューへ</button>
     </div>
   </div>
 </div>
@@ -185,10 +227,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=10"></script>
-<script src="js/audio.js?v=10"></script>
-<script src="js/world.js?v=10"></script>
-<script src="js/net.js?v=10"></script>
-<script src="js/game.js?v=10"></script>
+<script src="js/data.js?v=12"></script>
+<script src="js/audio.js?v=12"></script>
+<script src="js/world.js?v=12"></script>
+<script src="js/net.js?v=12"></script>
+<script src="js/game.js?v=12"></script>
 </body>
 </html>
