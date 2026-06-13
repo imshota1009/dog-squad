@@ -1163,6 +1163,7 @@ function beginGame(cfg){
     alert(T("webglError"));
     return;
   }
+  applyLang();
   cleanup();
   game.mode=cfg.mode;game.stage=cfg.stage;game.diff=cfg.diff;
   game.state="play";game.time=0;game.score=0;game.wave=0;game.kills=0;
