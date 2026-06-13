@@ -49,6 +49,12 @@ const I18N={
     waveClearSub:"飼い主が なにか投げてくれるぞ!",
     snackTime:"おやつの時間だ！",snackTimeSub:"飼い主が口笛を吹いて全員集めた！",
     allyGotItem:"なかまが アイテムゲット!",
+    combo:"れんさ",homerun:"場外ホームラン!",chain:"チェイン!",
+    buffDash:"ダッシュ",buffRapid:"れんしゃ",buffMega:"メガ爆風",
+    menuBtn:"メニュー",
+    coinUnit:"コイン",
+    skillClick:"クリック",skillBark:"わん！",
+    webglError:"ゲーム画面(WebGL)の初期化に失敗しているため、ゲームを開始できません。ブラウザを再読み込みするか、LINEやDiscordなどのアプリ内ブラウザではなく、ChromeやSafariなどの標準ブラウザで開き直してください。",
     lobbyTitle:"みんなで遊ぶ — ルーム",
   },
   en:{
@@ -83,6 +89,12 @@ const I18N={
     waveClearSub:"The owner is throwing something!",
     snackTime:"Snack time!",snackTimeSub:"The owner whistled and gathered everyone!",
     allyGotItem:"Ally grabbed an item!",
+    combo:"Chain",homerun:"OUT OF THE PARK!",chain:"Chain!",
+    buffDash:"Dash",buffRapid:"Rapid",buffMega:"Mega Blast",
+    menuBtn:"Menu",
+    coinUnit:"Coins",
+    skillClick:"Click",skillBark:"Woof!",
+    webglError:"WebGL initialization failed. Please reload the page or open in Chrome/Safari instead of an in-app browser (LINE, Discord, etc).",
     lobbyTitle:"Multiplayer — Room",
   }
 };

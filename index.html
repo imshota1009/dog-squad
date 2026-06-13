@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DOG SQUAD: SQUIRREL SIEGE</title>
-<link rel="stylesheet" href="css/style.css?v=12">
+<link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
 <div id="game"></div>
 
 <button id="muteBtn" title="サウンド切替"><i class="ic spk" id="spkIc"><b></b></i></button>
-<button id="menuBtn" class="hidden">メニュー</button>
+<button id="menuBtn" class="hidden" data-i18n="menuBtn">メニュー</button>
 
 <!-- ============ HUD ============ -->
 <div id="hud" class="hidden">
@@ -19,8 +19,8 @@
   <div id="wavebox"><span id="wave">WAVE 1</span><span id="timer">0.0 s</span></div>
   <div id="buffs"></div>
   <div id="skills">
-    <div class="sk"><i class="ic bone"></i><small>クリック</small><div class="cd" id="cd0"></div></div>
-    <div class="sk"><i class="ic bark"><b></b></i><small>SPACE</small><div class="cd" id="cd1"></div></div>
+    <div class="sk"><i class="ic bone"></i><small data-i18n="skillClick">クリック</small><div class="cd" id="cd0"></div></div>
+    <div class="sk"><i class="ic bark"><b></b></i><small data-i18n="skillBark">わん！</small><div class="cd" id="cd1"></div></div>
     <div class="sk"><i class="ic trap"></i><small id="trapN">×3 (E)</small></div>
   </div>
 </div>
@@ -227,10 +227,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=12"></script>
-<script src="js/audio.js?v=12"></script>
-<script src="js/world.js?v=12"></script>
-<script src="js/net.js?v=12"></script>
-<script src="js/game.js?v=12"></script>
+<script src="js/data.js?v=14"></script>
+<script src="js/audio.js?v=14"></script>
+<script src="js/world.js?v=14"></script>
+<script src="js/net.js?v=14"></script>
+<script src="js/game.js?v=14"></script>
 </body>
 </html>

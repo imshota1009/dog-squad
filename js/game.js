@@ -129,7 +129,7 @@ function addCombo(pos){
   game.maxCombo=Math.max(game.maxCombo,game.combo);
   if(game.combo>=2){
     const c=$("#combo");
-    c.textContent="れんさ ×"+game.combo+" COMBO!";
+    c.textContent=T("combo")+" ×"+game.combo+" COMBO!";
     c.style.opacity=1;c.classList.remove("pop");void c.offsetWidth;c.classList.add("pop");
     addScore(50*game.combo,pos,false);
   }
@@ -613,13 +613,13 @@ function updateSquirrels(dt){
             const imp=s.v.clone().multiplyScalar(.7);imp.y=Math.max(imp.y,5.5)+3;
             launchSquirrel(o,imp,1);
             s.v.multiplyScalar(.55);
-            fxText("チェイン!",o.g.position.clone().add(V3(0,2.5,0)));
+            fxText(T("chain"),o.g.position.clone().add(V3(0,2.5,0)));
             addScore(30,null,false);
             break;
           }
         }
       }
-      if(Math.hypot(p.x,p.z)>41){s._pop=true;s._bonus="場外ホームラン! +200";game.score+=200;}
+      if(Math.hypot(p.x,p.z)>41){s._pop=true;s._bonus=T("homerun")+" +200";game.score+=200;}
       if(s.flyT>4){
         if(s.hp<=0)s._pop=true;
         else{s.state="run";s.g.rotation.set(0,0,0);p.y=0;}
@@ -876,7 +876,7 @@ function updateBuffs(dt){
     if(game.buffs[k]>0){
       game.buffs[k]-=dt;
       if(game.buffs[k]>0){
-        const nm=k==="dash"?"ダッシュ":k==="rapid"?"れんしゃ":"メガ爆風";
+        const nm=k==="dash"?T("buffDash"):k==="rapid"?T("buffRapid"):T("buffMega");
         html+='<div class="buff">'+nm+" "+game.buffs[k].toFixed(0)+'</div>';
       }
     }
@@ -1023,16 +1023,24 @@ function renderMenu(){
   $("#menuCoins").textContent=SAVE.coins;
   $("#menuBest").textContent=SAVE.bestScore;
 }
-const TALKS=[
+const TALKS_JA=[
   "おかえり！コインで きたえてあげよう。バトル中も ぼくがアイテムを投げ入れるからね！",
   "リスたちも わるい子じゃないんだけどね…どんぐりの投げすぎは こまったもんだ。",
   "ほねコインは スコアでたまるよ。むずかしいほど たくさんもらえる！",
   "トラップ袋を そろえると 落とし穴名人になれるぞ。",
   "つよくなったら「むずかしい」の雪山に ちょうせんだ！"
 ];
+const TALKS_EN=[
+  "Welcome back! Train up with coins. I'll toss items to you mid-battle!",
+  "The squirrels aren't bad kids... they just throw too many acorns.",
+  "Bone Coins come from your score — harder modes give more!",
+  "Stock up on trap bags and become a pit trap master!",
+  "Once you're strong enough, take on the snowy mountain on Hard!"
+];
 function renderShop(){
   $("#shopCoins").textContent=SAVE.coins;
-  $("#ownerTalk").textContent=TALKS[rndi(0,TALKS.length-1)];
+  const talks=curLang==="en"?TALKS_EN:TALKS_JA;
+  $("#ownerTalk").textContent=talks[rndi(0,talks.length-1)];
   const el=$("#upList");el.innerHTML="";
   UPORDER.forEach(k=>{
     const u=UPS[k],lv=upLv(k),cost=upCost(k,lv),maxed=lv>=u.max;
@@ -1043,7 +1051,7 @@ function renderShop(){
     row.innerHTML='<div class="nm"><b>'+uLabel+'</b><span>'+uDesc+'</span></div>'+
       '<div class="lvDots">'+dots+'</div>'+
       '<button class="buyBtn" '+(maxed||SAVE.coins<cost?"disabled":"")+'>'+
-      (maxed?"MAX":cost+" コイン")+'</button>';
+      (maxed?"MAX":cost+" "+T("coinUnit"))+'</button>';
     if(!maxed)row.querySelector(".buyBtn").onclick=()=>{
       if(SAVE.coins<cost){sfx.deny();return;}
       SAVE.coins-=cost;SAVE.up[k]=lv+1;persist();sfx.buy();renderShop();
@@ -1152,7 +1160,7 @@ Net.handlers.close=()=>{
    ========================================================= */
 function beginGame(cfg){
   if(!scene){
-    alert("ゲーム画面(WebGL)の初期化に失敗しているため、ゲームを開始できません。ブラウザを再読み込みするか、LINEやDiscordなどのアプリ内ブラウザではなく、ChromeやSafariなどの標準ブラウザで開き直してください。");
+    alert(T("webglError"));
     return;
   }
   cleanup();
