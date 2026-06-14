@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>DOG SQUAD — DDA 機械学習実装計画書</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#111;font-size:13px;line-height:1.7;}
+  .cover{background:#111;color:#fff;padding:60px 56px 48px;min-height:220px;}
+  .cover-tag{font-size:11px;letter-spacing:.2em;color:#888;margin-bottom:12px;}
+  .cover-title{font-size:32px;font-weight:900;letter-spacing:.04em;margin-bottom:6px;}
+  .cover-sub{font-size:15px;color:#aaa;margin-bottom:28px;}
+  .cover-meta{display:flex;gap:32px;font-size:12px;color:#666;border-top:1px solid #333;padding-top:16px;}
+  .cover-meta span b{color:#ccc;}
+  .body{padding:40px 56px;}
+  h2{font-size:17px;font-weight:900;border-left:4px solid #111;padding-left:12px;margin:32px 0 14px;}
+  h3{font-size:13px;font-weight:700;margin:20px 0 8px;color:#333;}
+  p{margin-bottom:10px;color:#333;}
+  table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:12px;}
+  th{background:#111;color:#fff;padding:8px 12px;text-align:left;font-weight:700;}
+  td{padding:7px 12px;border-bottom:1px solid #e5e5e5;vertical-align:top;}
+  tr:nth-child(even) td{background:#f8f8f8;}
+  .phase-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:16px 0 24px;}
+  .phase-card{border:1px solid #e0e0e0;border-radius:8px;padding:16px;}
+  .phase-card.done{border-color:#111;background:#f5f5f5;}
+  .phase-num{font-size:10px;font-weight:700;letter-spacing:.15em;color:#888;margin-bottom:6px;}
+  .phase-title{font-size:14px;font-weight:900;margin-bottom:8px;}
+  .phase-card.done .phase-title::after{content:" ✓";color:#111;}
+  .phase-trigger{font-size:11px;background:#111;color:#fff;display:inline-block;padding:2px 8px;border-radius:3px;margin-bottom:8px;}
+  .phase-items{font-size:11px;color:#555;padding-left:14px;}
+  .phase-items li{margin-bottom:3px;}
+  .badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.1em;padding:2px 8px;border-radius:3px;margin-right:4px;}
+  .badge-done{background:#111;color:#fff;}
+  .badge-next{background:#e5e5e5;color:#555;}
+  .note{background:#fffbea;border:1px solid #f0d060;border-radius:6px;padding:12px 16px;font-size:12px;margin:16px 0;}
+  .code{background:#f4f4f4;border-radius:4px;padding:10px 14px;font-family:monospace;font-size:11px;color:#333;margin:8px 0;white-space:pre-wrap;line-height:1.6;}
+  .footer{margin-top:40px;padding-top:16px;border-top:1px solid #e5e5e5;font-size:11px;color:#aaa;display:flex;justify-content:space-between;}
+  ul{padding-left:18px;margin-bottom:10px;}
+  li{margin-bottom:3px;color:#333;}
+  .highlight{font-weight:700;color:#111;}
+  @media print{body{font-size:12px;}.body{padding:24px 40px;}.cover{padding:40px;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-tag">TECHNICAL PLAN — MACHINE LEARNING</div>
+  <div class="cover-title">DOG SQUAD: SQUIRREL SIEGE</div>
+  <div class="cover-sub">動的難易度調整（DDA）× 機械学習 実装計画書</div>
+  <div class="cover-meta">
+    <span><b>作成日</b> 2026-06-15</span>
+    <span><b>対象リポジトリ</b> github.com/imshota1009/dog-squad</span>
+    <span><b>Firebase Project</b> dog-squad-game-app</span>
+    <span><b>現在フェーズ</b> Phase 1 完了</span>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- ========== OVERVIEW ========== -->
+  <h2>1. プロジェクト概要</h2>
+  <p>
+    DOG SQUAD のプレイデータを Firebase Firestore に蓄積し、機械学習モデルを訓練することで
+    <span class="highlight">動的難易度調整（Dynamic Difficulty Adjustment / DDA）</span> を実現する。
+    プレイヤーの実力に合わせて敵のパラメータをリアルタイムで変化させ、
+    「簡単すぎず、難しすぎない」最適な体験を自動で提供することを目標とする。
+  </p>
+
+  <!-- ========== DATA PLAN ========== -->
+  <h2>2. データ収集計画</h2>
+
+  <h3>必要サンプル数の目安</h3>
+  <table>
+    <tr><th>サンプル数</th><th>モデル精度</th><th>判定</th></tr>
+    <tr><td>〜50 セッション</td><td>ほぼルールベースと同じ</td><td>少なすぎ</td></tr>
+    <tr><td>100〜200 セッション</td><td>簡単なパターンは学習できる</td><td>最低ライン</td></tr>
+    <tr><td><b>200〜300 セッション</b></td><td>犬種・ステージ別の傾向も取れる</td><td>✅ 推奨</td></tr>
+    <tr><td>500+</td><td>かなり精度が上がる</td><td>理想</td></tr>
+  </table>
+  <p>目標: <span class="highlight">友達 5〜10人 × 各 20〜30 回プレイ（合計 100〜300 セッション）</span></p>
+
+  <h3>収集フィールド一覧（Firestore: dda_sessions コレクション）</h3>
+  <table>
+    <tr><th>フィールド</th><th>型</th><th>内容</th><th>ML での用途</th></tr>
+    <tr><td>stage</td><td>string</td><td>park / beach / snow</td><td>入力特徴量</td></tr>
+    <tr><td>diff</td><td>string</td><td>easy / normal / hard / endless</td><td>入力特徴量</td></tr>
+    <tr><td>breed</td><td>string</td><td>選択した犬種</td><td>入力特徴量</td></tr>
+    <tr><td>win</td><td>bool</td><td>勝敗</td><td>ラベル / 特徴量</td></tr>
+    <tr><td>rank</td><td>string</td><td>S / A / B / C / -</td><td>目標変数（快適さ指標）</td></tr>
+    <tr><td>wave_reached</td><td>int</td><td>到達 WAVE 数</td><td>入力特徴量</td></tr>
+    <tr><td>wave_pct</td><td>int</td><td>全 WAVE 中の進行率 %</td><td>入力特徴量</td></tr>
+    <tr><td>score</td><td>int</td><td>スコア</td><td>入力特徴量</td></tr>
+    <tr><td>kills</td><td>int</td><td>撃破数</td><td>入力特徴量</td></tr>
+    <tr><td>max_combo</td><td>int</td><td>最大コンボ数</td><td>入力特徴量</td></tr>
+    <tr><td>clear_time</td><td>float</td><td>クリアタイム（秒）</td><td>入力特徴量</td></tr>
+    <tr><td>hp_remaining</td><td>int</td><td>犬小屋残 HP</td><td>快適さ指標</td></tr>
+    <tr><td>hp_pct</td><td>int</td><td>残 HP パーセンテージ</td><td>目標変数（メイン）</td></tr>
+    <tr><td>coins_earned</td><td>int</td><td>獲得コイン</td><td>参考</td></tr>
+    <tr><td>lang</td><td>string</td><td>ja / en</td><td>参考</td></tr>
+    <tr><td>ts</td><td>timestamp</td><td>サーバータイムスタンプ</td><td>時系列分析</td></tr>
+  </table>
+
+  <div class="note">
+    💡 <b>快適さの定義:</b> hp_pct が 20〜70% の範囲でクリア = 「ちょうど良い難しさ」とみなす。
+    hp_pct &gt; 70% = 簡単すぎ、hp_pct &lt; 20% or 負け = 難しすぎ。この閾値を目標変数として使用する。
+  </div>
+
+  <!-- ========== PHASES ========== -->
+  <h2>3. 実装フェーズ</h2>
+
+  <div class="phase-grid">
+    <div class="phase-card done">
+      <div class="phase-num">PHASE 1</div>
+      <div class="phase-title">データ収集</div>
+      <div><span class="badge badge-done">完了</span></div>
+      <ul class="phase-items" style="margin-top:8px">
+        <li>game.js に saveDDASession() 追加</li>
+        <li>Firestore dda_sessions コレクション作成</li>
+        <li>セキュリティルール更新（write-only）</li>
+        <li>Firebase にデプロイ済み</li>
+      </ul>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">PHASE 2</div>
+      <div class="phase-title">モデル訓練</div>
+      <div><span class="badge badge-next">100〜200 セッション後</span></div>
+      <ul class="phase-items" style="margin-top:8px">
+        <li>Firestore → CSV エクスポート</li>
+        <li>Python (scikit-learn / TF) で訓練</li>
+        <li>入力: stage, diff, breed, score など</li>
+        <li>出力: 推奨難易度倍率 (0.6〜1.8)</li>
+        <li>TensorFlow.js 形式に変換</li>
+      </ul>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">PHASE 3</div>
+      <div class="phase-title">ゲーム内推論</div>
+      <div><span class="badge badge-next">モデル完成後</span></div>
+      <ul class="phase-items" style="margin-top:8px">
+        <li>TF.js モデルをゲームに組み込み</li>
+        <li>プレイ前に過去成績から倍率を推論</li>
+        <li>敵 HP / 速度 / 出現間隔に反映</li>
+        <li>フォールバック: ルールベース維持</li>
+        <li>A/B テストで効果を検証</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ========== TECH ========== -->
+  <h2>4. 使用技術スタック</h2>
+  <table>
+    <tr><th>フェーズ</th><th>ツール / ライブラリ</th><th>用途</th></tr>
+    <tr><td>Phase 1</td><td>Firebase Firestore</td><td>セッションデータのリアルタイム蓄積</td></tr>
+    <tr><td>Phase 2</td><td>Python + pandas</td><td>データ前処理・特徴量エンジニアリング</td></tr>
+    <tr><td>Phase 2</td><td>scikit-learn / TensorFlow</td><td>回帰モデル訓練（難易度倍率予測）</td></tr>
+    <tr><td>Phase 2</td><td>tensorflowjs_converter</td><td>モデルを TF.js フォーマットに変換</td></tr>
+    <tr><td>Phase 3</td><td>TensorFlow.js</td><td>ブラウザ内リアルタイム推論</td></tr>
+    <tr><td>Phase 3</td><td>Firestore（読み取り）</td><td>プレイヤーの過去セッション参照</td></tr>
+  </table>
+
+  <!-- ========== MODEL ========== -->
+  <h2>5. モデル設計（Phase 2 予定）</h2>
+
+  <h3>入力特徴量（X）</h3>
+  <div class="code">features = [
+  stage_encoded,      # park=0, beach=1, snow=2
+  diff_encoded,       # easy=0, normal=1, hard=2, endless=3
+  breed_encoded,      # shiba=0, golden=1, dal=2, corgi=3, husky=4, pug=5
+  avg_hp_pct,         # 過去 N セッションの平均残 HP%
+  avg_wave_pct,       # 平均進行率%
+  win_rate,           # 勝率
+  avg_score_norm,     # 正規化スコア
+]</div>
+
+  <h3>出力（Y）</h3>
+  <div class="code">target = difficulty_multiplier  # 0.6（大幅に易しく）〜 1.8（大幅に難しく）
+# hp_pct が 20〜70% に収まるような倍率を学習</div>
+
+  <h3>モデル候補</h3>
+  <table>
+    <tr><th>モデル</th><th>サンプル数</th><th>特徴</th></tr>
+    <tr><td>Random Forest Regressor</td><td>100〜</td><td>解釈しやすい・過学習しにくい（最初の選択肢）</td></tr>
+    <tr><td>小規模ニューラルネット（3層）</td><td>200〜</td><td>TF.js に直接変換できる</td></tr>
+    <tr><td>Gradient Boosting</td><td>300〜</td><td>精度が高い・TF.js 変換に工夫が必要</td></tr>
+  </table>
+
+  <!-- ========== NEXT ========== -->
+  <h2>6. Phase 2 に進むときの手順</h2>
+  <ol style="padding-left:18px;color:#333;margin-bottom:16px">
+    <li style="margin-bottom:8px">Firebase コンソール → Firestore → <b>dda_sessions</b> コレクションを確認し、セッション数が 100 を超えていたら着手</li>
+    <li style="margin-bottom:8px">Claude Code に「DDA の Phase 2 を始めてください」と声をかける</li>
+    <li style="margin-bottom:8px">データエクスポートスクリプト・訓練スクリプト・変換スクリプトを順に実装</li>
+    <li style="margin-bottom:8px">生成された <code>model.json</code> + <code>weights.bin</code> を dog-squad/ml/ に配置</li>
+    <li style="margin-bottom:8px">Phase 3: game.js に TF.js 推論コードを追加して Firebase にデプロイ</li>
+  </ol>
+
+  <div class="note">
+    🔗 <b>Firestore でセッション数を確認する方法:</b><br>
+    Firebase コンソール（console.firebase.google.com）→ dog-squad-game-app →
+    Firestore Database → dda_sessions コレクションを開く。
+    右上にドキュメント数が表示される。
+  </div>
+
+  <!-- ========== FILES ========== -->
+  <h2>7. 関連ファイル一覧</h2>
+  <table>
+    <tr><th>ファイル</th><th>内容</th><th>状態</th></tr>
+    <tr><td>js/game.js</td><td>saveDDASession() 関数 — ゲーム終了時に Firestore 保存</td><td>✅ 実装済み</td></tr>
+    <tr><td>firestore.rules</td><td>dda_sessions: write-only ルール</td><td>✅ デプロイ済み</td></tr>
+    <tr><td>docs/DDA_plan.html / .pdf</td><td>本計画書</td><td>✅ 保存済み</td></tr>
+    <tr><td>ml/export_data.py</td><td>Firestore → CSV エクスポートスクリプト</td><td>⬜ Phase 2</td></tr>
+    <tr><td>ml/train_model.py</td><td>モデル訓練・TF.js 変換スクリプト</td><td>⬜ Phase 2</td></tr>
+    <tr><td>ml/model.json + weights.bin</td><td>訓練済み TF.js モデル</td><td>⬜ Phase 2</td></tr>
+    <tr><td>js/dda.js</td><td>TF.js 推論 + 難易度適用ロジック</td><td>⬜ Phase 3</td></tr>
+  </table>
+
+  <div class="footer">
+    <span>DOG SQUAD: SQUIRREL SIEGE — DDA 実装計画書</span>
+    <span>作成: 2026-06-15 / NekoDev Studio</span>
+  </div>
+
+</div>
+</body>
+</html>
