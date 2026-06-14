@@ -1,17 +1,26 @@
-# DOG SQUAD: SQUIRREL SIEGE
+<div align="center">
 
-[日本語版はこちら](#japanese)
+# 🐶 DOG SQUAD: SQUIRREL SIEGE
 
----
-
-## English
-
-A browser-based 3D tower-defense action game.
-Defend your doghouse from the acorn-armed squirrel army with your squad of dogs!
+**[日本語](#japanese) | [English](#english)**
 
 🎮 **Play now:** https://dog-squad-game-app.web.app
 
-### How to Play
+</div>
+
+---
+
+<a name="english"></a>
+## 🇺🇸 English
+
+A browser-based 3D tower-defense action game built with Three.js and the Web Audio API.
+Defend your doghouse from the acorn-armed squirrel army with your squad of dogs!
+
+<div align="center">
+  <img src="docs/dog_EN.gif" alt="DOG SQUAD gameplay (English)" width="720">
+</div>
+
+### 🎮 How to Play
 
 #### Solo
 Open the game in your browser, choose a stage, difficulty, and dog breed — then charge!
@@ -36,7 +45,7 @@ Open the game in your browser, choose a stage, difficulty, and dog breed — the
 Prevent squirrels from reaching the doghouse. Survive all 12 waves without the doghouse HP hitting zero!
 Earn Bone Coins from your score and spend them at the Owner's Shop for permanent upgrades.
 
-### Enemy Types
+### 🐿️ Enemy Types
 | Enemy | Description |
 |---|---|
 | Normal Squirrel | Basic enemy |
@@ -46,7 +55,7 @@ Earn Bone Coins from your score and spend them at the Owner's Shop for permanent
 | Gliding Squirrel | Flies through the air |
 | Boss — King Acorn III | Extremely powerful, appears periodically |
 
-### Dog Breeds
+### 🐾 Dog Breeds
 | Breed | Trait |
 |---|---|
 | Shiba Pochi | Balanced all-rounder |
@@ -56,7 +65,7 @@ Earn Bone Coins from your score and spend them at the Owner's Shop for permanent
 | Husky Haku | Powerful Bone Missiles |
 | Pug Puu | More traps |
 
-### Tech Stack
+### 🛠️ Tech Stack
 - **HTML / CSS** — UI & CSS art (all icons and characters drawn entirely in CSS)
 - **JavaScript** — Game logic & network sync
 - **Three.js** — 3D rendering
@@ -67,14 +76,16 @@ Earn Bone Coins from your score and spend them at the Owner's Shop for permanent
 ---
 
 <a name="japanese"></a>
-## 日本語
+## 🇯🇵 日本語
 
-ブラウザで動く 3DCG タワーディフェンス × アクションゲーム。
+Three.js と Web Audio API で作ったブラウザ 3D タワーディフェンス × アクションゲーム。
 どんぐり武装のリス軍団から、わんちゃん隊で公園の犬小屋を守りぬけ！
 
-🎮 **プレイ:** https://dog-squad-game-app.web.app
+<div align="center">
+  <img src="docs/dog_JP.gif" alt="DOG SQUAD ゲームプレイ（日本語）" width="720">
+</div>
 
-### 遊び方
+### 🎮 遊び方
 
 #### ひとりで遊ぶ
 ブラウザで開くだけ。ステージ・難易度・犬種を選んでしゅつげき！
@@ -99,7 +110,7 @@ Earn Bone Coins from your score and spend them at the Owner's Shop for permanent
 敵リスが犬小屋に到達するとHPが減る。WAVE 12 まで犬小屋のHPが0にならなければクリア！
 スコアでほねコインを獲得し、飼い主のショップで永続強化できる。
 
-### 敵の種類
+### 🐿️ 敵の種類
 | 敵 | 特徴 |
 |---|---|
 | ノーマルリス | 基本の敵 |
@@ -109,7 +120,7 @@ Earn Bone Coins from your score and spend them at the Owner's Shop for permanent
 | 滑空リス（ムササビ） | 空中を飛んでくる |
 | ボス キング・どんぐり三世 | 超強力！定期的に出現 |
 
-### わんちゃん犬種
+### 🐾 わんちゃん犬種
 | 犬種 | 特徴 |
 |---|---|
 | 柴犬ポチ | バランス型 |
@@ -119,7 +130,7 @@ Earn Bone Coins from your score and spend them at the Owner's Shop for permanent
 | ハスキーのハク | 骨ミサイルが強力 |
 | パグのプー | トラップ数が多い |
 
-### 使用言語・技術
+### 🛠️ 使用言語・技術
 - **HTML / CSS** — UI・CSSアート（アイコン・キャラクターをすべてCSSで描画）
 - **JavaScript** — ゲームロジック・ネットワーク同期
 - **Three.js** — 3DCGレンダリング
