@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DOG SQUAD: SQUIRREL SIEGE</title>
-<link rel="stylesheet" href="css/style.css?v=19">
+<link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body>
 <div id="game"></div>
@@ -45,7 +45,8 @@
       <button class="go blue" id="btnMulti" disabled style="opacity:.5;cursor:default;box-shadow:0 7px 0 #14478c">みんなで遊ぶ（最大6人）<br><small style="font-size:14px;font-weight:700" id="btnMultiSub">🚧 準備中</small></button>
       <button class="go green" id="btnShop" data-i18n="btnShop">飼い主のショップ</button>
     </div>
-    <div style="margin-top:10px">
+    <div style="margin-top:10px;display:flex;gap:8px;justify-content:center">
+      <button class="btn2" id="btnRanking" data-i18n="btnRanking">🏆 ランキング</button>
       <button class="btn2" id="btnSettings" data-i18n="btnSettings">⚙ 設定</button>
     </div>
     <div class="ctrl" id="ctrlText" data-i18n-html="ctrlText">WASD / 矢印キー：移動　|　マウス：ねらう　|　クリック：骨ミサイル<br>
@@ -213,6 +214,45 @@
   </div>
 </div>
 
+<!-- ============ RANKING ============ -->
+<div id="scrRanking" class="scr hidden">
+  <div class="panel" style="max-width:520px">
+    <div class="h2" data-i18n="rankingTitle">🏆 ランキング</div>
+    <div class="rankFilters">
+      <select id="rankFilterStage" class="rankSelect">
+        <option value="all" data-i18n="rankAll">すべて</option>
+        <option value="park">🌳 Park</option>
+        <option value="beach">🏖 Beach</option>
+        <option value="snow">❄️ Snow</option>
+      </select>
+      <select id="rankFilterDiff" class="rankSelect">
+        <option value="all" data-i18n="rankAll">すべて</option>
+        <option value="easy">Easy</option>
+        <option value="normal">Normal</option>
+        <option value="hard">Hard</option>
+        <option value="endless">Endless</option>
+      </select>
+    </div>
+    <div id="rankingList" class="rankingList"><div class="rankLoading" data-i18n="rankLoading">読み込み中…</div></div>
+    <div style="margin-top:16px"><button class="btn2" id="btnRankingBack" data-i18n="btnBack">もどる</button></div>
+  </div>
+</div>
+
+<!-- ============ RANKING NAME ENTRY ============ -->
+<div id="scrRankName" class="scr hidden">
+  <div class="panel" style="max-width:360px">
+    <div class="h2" data-i18n="rankNameTitle">🏆 ランキングに登録！</div>
+    <div class="sub" style="font-size:14px;margin:10px 0 18px;opacity:.8" id="rankNameScore"></div>
+    <div class="netrow" style="margin:0 0 18px">
+      <input class="txt" id="rankNameInput" maxlength="10" style="font-size:20px;width:80%;text-align:center">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn2" id="btnRankNameSkip" data-i18n="rankNameSkip">スキップ</button>
+      <button class="go" id="btnRankNameOk" data-i18n="rankNameOk">登録する！</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ RESULT ============ -->
 <div id="scrResult" class="scr hidden">
   <div class="panel">
@@ -221,6 +261,7 @@
     <div id="resStats"></div>
     <div class="resBtns">
       <button class="go" id="btnRetry" data-i18n="btnRetry">もういちど！</button>
+      <button class="go green" id="btnResRanking" data-i18n="btnRanking">🏆 ランキング</button>
       <button class="go blue" id="btnMenu" data-i18n="btnToMenu">メニューへ</button>
     </div>
   </div>
@@ -241,10 +282,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=19"></script>
-<script src="js/audio.js?v=19"></script>
-<script src="js/world.js?v=19"></script>
-<script src="js/net.js?v=19"></script>
-<script src="js/game.js?v=19"></script>
+<script src="js/data.js?v=20"></script>
+<script src="js/audio.js?v=20"></script>
+<script src="js/world.js?v=20"></script>
+<script src="js/net.js?v=20"></script>
+<script src="js/game.js?v=20"></script>
 </body>
 </html>

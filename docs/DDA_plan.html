@@ -39,7 +39,14 @@
   ul{padding-left:18px;margin-bottom:10px;}
   li{margin-bottom:3px;color:#333;}
   .highlight{font-weight:700;color:#111;}
-  @media print{body{font-size:12px;}.body{padding:24px 40px;}.cover{padding:40px;}}
+  @page { margin: 0; }
+  @media print{
+    body{font-size:12px;}
+    .body{padding:24px 40px;}
+    .cover{padding:40px;}
+    /* push content away from edge so nothing is clipped */
+    .cover{padding-top:48px;}
+  }
 </style>
 </head>
 <body>
