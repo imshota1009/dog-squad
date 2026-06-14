@@ -1299,6 +1299,9 @@ function saveDDASession(win,stats,rank,coins){
       hp_remaining:stats.hp,
       hp_pct:hpPct,
       coins_earned:coins,
+      // ---- shop upgrades (so ML can account for player power level) ----
+      upgrades: Object.assign({}, SAVE.up||{}),
+      upgrade_total: Object.values(SAVE.up||{}).reduce((s,v)=>s+(v||0),0),
       // ---- quit reason (null = natural game over) ----
       quit_reason: win ? null : (game._quitReason || "gameover"),
       // ---- meta ----
