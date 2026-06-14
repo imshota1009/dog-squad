@@ -1259,6 +1259,39 @@ function endGame(win){
   if(game.mode==="host"&&Net.connected)Net.game({t:"ev",k:"end",win,stats});
   showResult(win,stats);
 }
+function saveDDASession(win,stats,rank,coins){
+  try{
+    const db=firebase.firestore();
+    const hpPct=game.baseMax>0?Math.round(stats.hp/game.baseMax*100):0;
+    const waveMax=DIFFS[game.diff].maxWave||99;
+    const doc={
+      // ---- game context ----
+      stage:game.stage,
+      diff:game.diff,
+      breed:game.breed||sel.breed||"shiba",
+      mode:game.mode,
+      // ---- result ----
+      win:win,
+      rank:rank,
+      wave_reached:game.wave,
+      wave_max:waveMax,
+      wave_pct:Math.round(game.wave/waveMax*100),
+      // ---- performance ----
+      score:stats.sc,
+      kills:stats.kills,
+      max_combo:stats.mc,
+      clear_time:stats.tm,
+      hp_remaining:stats.hp,
+      hp_pct:hpPct,
+      coins_earned:coins,
+      // ---- meta ----
+      lang:curLang,
+      ts:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    db.collection("dda_sessions").add(doc).catch(()=>{});
+  }catch(e){}
+}
+
 function showResult(win,stats){
   game.state="end";game.timeScale=.25;
   if(win)sfx.big();else sfx.lose();
@@ -1271,6 +1304,7 @@ function showResult(win,stats){
   if(stats.sc>SAVE.bestScore)SAVE.bestScore=stats.sc;
   if(win)SAVE.wins=(SAVE.wins||0)+1;
   persist();
+  saveDDASession(win,stats,rank,coins);
   setTimeout(()=>{
     if(win) $("#resTitle").textContent=T("resWin");
     else if(game.diff==="endless") $("#resTitle").textContent="WAVE "+game.wave+" "+T("resEndless");

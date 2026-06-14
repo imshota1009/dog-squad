@@ -7,5 +7,10 @@ service cloud.firestore {
         allow read, write: if true;
       }
     }
+    // DDA data collection — write-only for players, read for admin
+    match /dda_sessions/{sessionId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
   }
 }
