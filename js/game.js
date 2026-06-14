@@ -1172,7 +1172,7 @@ function beginGame(cfg){
   applyLang();
   cleanup();
   game.mode=cfg.mode;game.stage=cfg.stage;game.diff=cfg.diff;
-  game.state="play";game.time=0;game.score=0;game.wave=0;game.kills=0;
+  game.state="play";game.time=0;game.score=0;game.wave=0;game.kills=0;game._quitReason=null;
   $("#menuBtn").classList.remove("hidden");
   game.maxCombo=0;game.combo=0;game.comboT=0;game.timeScale=1;game.slowT=0;
   game.spawnQueue=[];game.waveDone=false;game.sqId=1;game.itemId=1;
@@ -1284,6 +1284,8 @@ function saveDDASession(win,stats,rank,coins){
       hp_remaining:stats.hp,
       hp_pct:hpPct,
       coins_earned:coins,
+      // ---- quit reason (null = natural game over) ----
+      quit_reason: win ? null : (game._quitReason || "gameover"),
       // ---- meta ----
       lang:curLang,
       ts:firebase.firestore.FieldValue.serverTimestamp()
@@ -1448,9 +1450,19 @@ $("#btnResume").onclick=()=>{
 };
 $("#btnQuit").onclick=()=>{
   try{sfx.click();}catch(e){}
+  show("#scrQuitReason");
+};
+function quitWithReason(reason){
+  try{sfx.click();}catch(e){}
+  // Store reason so saveDDASession can pick it up
+  game._quitReason=reason;
   show(null);
   endGame(false);
-};
+}
+$("#btnQuitHard" ).onclick=()=>quitWithReason("too_hard");
+$("#btnQuitBored").onclick=()=>quitWithReason("bored");
+$("#btnQuitTime" ).onclick=()=>quitWithReason("no_time");
+$("#btnQuitOther").onclick=()=>quitWithReason("other");
 
 // Name modal button
 $("#btnNameOk").onclick=()=>{
