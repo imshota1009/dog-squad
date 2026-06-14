@@ -91,6 +91,8 @@
   <table>
     <tr><th>フィールド</th><th>型</th><th>内容</th><th>ML での用途</th></tr>
     <tr><td>stage</td><td>string</td><td>park / beach / snow</td><td>入力特徴量</td></tr>
+    <tr><td>upgrades</td><td>object</td><td>各アップグレードのレベル例: {"house":2,"missile":1}</td><td>入力特徴量（プレイヤー強化補正）</td></tr>
+    <tr><td>upgrade_total</td><td>int</td><td>全アップグレード合計レベル</td><td>入力特徴量（プレイヤー強化補正）</td></tr>
     <tr><td>diff</td><td>string</td><td>easy / normal / hard / endless</td><td>入力特徴量</td></tr>
     <tr><td>breed</td><td>string</td><td>選択した犬種</td><td>入力特徴量</td></tr>
     <tr><td>win</td><td>bool</td><td>勝敗</td><td>ラベル / 特徴量</td></tr>
@@ -110,7 +112,9 @@
 
   <div class="note">
     💡 <b>快適さの定義:</b> hp_pct が 20〜70% の範囲でクリア = 「ちょうど良い難しさ」とみなす。
-    hp_pct &gt; 70% = 簡単すぎ、hp_pct &lt; 20% or 負け = 難しすぎ。この閾値を目標変数として使用する。
+    hp_pct &gt; 70% = 簡単すぎ、hp_pct &lt; 20% or 負け = 難しすぎ。この閾値を目標変数として使用する。<br><br>
+    ⚠️ <b>アップグレード補正:</b> ショップでアイテムを購入しているプレイヤーは upgrade_total が高くなる。
+    モデルの学習時は upgrade_total を特徴量に含め、強化済みでも余裕があった場合と素の実力を区別する。
   </div>
 
   <!-- ========== PHASES ========== -->
@@ -215,7 +219,8 @@
     <tr><th>ファイル</th><th>内容</th><th>状態</th></tr>
     <tr><td>js/game.js</td><td>saveDDASession() 関数 — ゲーム終了時に Firestore 保存</td><td>✅ 実装済み</td></tr>
     <tr><td>firestore.rules</td><td>dda_sessions: write-only ルール</td><td>✅ デプロイ済み</td></tr>
-    <tr><td>docs/DDA_plan.html / .pdf</td><td>本計画書</td><td>✅ 保存済み</td></tr>
+    <tr><td>docs/DDA_plan.html / .pdf</td><td>本計画書（アップグレード追記済み）</td><td>✅ 保存済み</td></tr>
+    <tr><td>docs/DDA_presentation.pptx</td><td>プレゼンテーション用スライド</td><td>✅ 保存済み</td></tr>
     <tr><td>ml/export_data.py</td><td>Firestore → CSV エクスポートスクリプト</td><td>⬜ Phase 2</td></tr>
     <tr><td>ml/train_model.py</td><td>モデル訓練・TF.js 変換スクリプト</td><td>⬜ Phase 2</td></tr>
     <tr><td>ml/model.json + weights.bin</td><td>訓練済み TF.js モデル</td><td>⬜ Phase 2</td></tr>
