@@ -1528,10 +1528,12 @@ function updMute(){$("#spkIc").classList.toggle("off",muted);}
 $("#muteBtn").onclick=e=>{e.stopPropagation();initAudio();setMute(!muted);updMute();};
 $("#menuBtn").onclick=()=>{
   try{sfx.click();}catch(e){}
+  if(game.state==="play"){game.state="pause";}
   show("#scrPause");
 };
 $("#btnResume").onclick=()=>{
   try{sfx.click();}catch(e){}
+  if(game.state==="pause"){game.state="play";}
   show(null);
 };
 $("#btnQuit").onclick=()=>{
@@ -1542,6 +1544,7 @@ $("#btnQuitConfirm").onclick=()=>{
   try{sfx.click();}catch(e){}
   game._quitReason="quit";
   game._noCoins=true;
+  game.state="play";
   show(null);
   endGame(false);
 };
