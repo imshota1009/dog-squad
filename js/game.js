@@ -1172,7 +1172,7 @@ function beginGame(cfg){
   applyLang();
   cleanup();
   game.mode=cfg.mode;game.stage=cfg.stage;game.diff=cfg.diff;
-  game.state="play";game.time=0;game.score=0;game.wave=0;game.kills=0;game._quitReason=null;
+  game.state="play";game.time=0;game.score=0;game.wave=0;game.kills=0;game._quitReason=null;game._noCoins=false;
   $("#menuBtn").classList.remove("hidden");
   game.maxCombo=0;game.combo=0;game.comboT=0;game.timeScale=1;game.slowT=0;
   game.spawnQueue=[];game.waveDone=false;game.sqId=1;game.itemId=1;
@@ -1266,10 +1266,8 @@ function endGame(win){
    - Did not quit out of boredom / time / other non-difficulty reasons
 */
 function isQualifiedSession(stats){
-  if(stats.tm<60) return false;         // under 1 minute — too short
-  if(game.wave<2) return false;         // never reached wave 2
-  const r=game._quitReason;
-  if(r==="bored"||r==="no_time"||r==="other") return false;
+  if(stats.tm<60) return false;   // under 1 minute — too short
+  if(game.wave<2) return false;   // never reached wave 2
   return true;
 }
 
@@ -1319,8 +1317,9 @@ function showResult(win,stats){
   const diffF={easy:.8,normal:1,hard:1.3,endless:1.5}[game.diff]||1;
   const norm=stats.sc/(stageF*diffF);
   const rank=!win?"-":norm>=4200?"S":norm>=3300?"A":norm>=2500?"B":"C";
-  const coins=Math.floor(stats.sc/45*DIFFS[game.diff].coin)+(win?Math.floor(80*DIFFS[game.diff].coin):0);
-  SAVE.coins+=coins;
+  const coinsRaw=Math.floor(stats.sc/45*DIFFS[game.diff].coin)+(win?Math.floor(80*DIFFS[game.diff].coin):0);
+  const coins=game._noCoins?0:coinsRaw;
+  if(!game._noCoins)SAVE.coins+=coins;
   if(stats.sc>SAVE.bestScore)SAVE.bestScore=stats.sc;
   if(win)SAVE.wins=(SAVE.wins||0)+1;
   persist();
@@ -1469,19 +1468,19 @@ $("#btnResume").onclick=()=>{
 };
 $("#btnQuit").onclick=()=>{
   try{sfx.click();}catch(e){}
-  show("#scrQuitReason");
+  show("#scrQuitConfirm");
 };
-function quitWithReason(reason){
+$("#btnQuitConfirm").onclick=()=>{
   try{sfx.click();}catch(e){}
-  // Store reason so saveDDASession can pick it up
-  game._quitReason=reason;
+  game._quitReason="quit";
+  game._noCoins=true;
   show(null);
   endGame(false);
-}
-$("#btnQuitHard" ).onclick=()=>quitWithReason("too_hard");
-$("#btnQuitBored").onclick=()=>quitWithReason("bored");
-$("#btnQuitTime" ).onclick=()=>quitWithReason("no_time");
-$("#btnQuitOther").onclick=()=>quitWithReason("other");
+};
+$("#btnQuitCancel").onclick=()=>{
+  try{sfx.click();}catch(e){}
+  show("#scrPause");
+};
 
 // Name modal button
 $("#btnNameOk").onclick=()=>{

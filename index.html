@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DOG SQUAD: SQUIRREL SIEGE</title>
-<link rel="stylesheet" href="css/style.css?v=22">
+<link rel="stylesheet" href="css/style.css?v=23">
 </head>
 <body>
 <div id="game"></div>
@@ -135,16 +135,14 @@
   </div>
 </div>
 
-<!-- ============ QUIT REASON MODAL ============ -->
-<div id="scrQuitReason" class="scr hidden">
+<!-- ============ QUIT CONFIRM MODAL ============ -->
+<div id="scrQuitConfirm" class="scr hidden">
   <div class="panel" style="max-width:340px;margin-top:10%">
-    <div class="h2" data-i18n="quitReasonTitle">やめる理由は？</div>
-    <div class="sub" style="font-size:13px;margin:8px 0 16px;opacity:.7" data-i18n="quitReasonSub">データ収集にご協力ください！</div>
+    <div class="h2" data-i18n="quitConfirmTitle">本当にやめる？</div>
+    <div class="sub" style="font-size:15px;margin:10px 0 20px;opacity:.85" data-i18n="quitConfirmSub">⚠️ あきらめると コインはもらえません！</div>
     <div class="mainBtns" style="margin-top:4px">
-      <button class="go"      id="btnQuitHard"   style="min-width:220px;font-size:17px;padding:8px 16px" data-i18n="quitReasonHard">難しすぎた 😣</button>
-      <button class="go blue" id="btnQuitBored"  style="min-width:220px;font-size:17px;padding:8px 16px;box-shadow:0 5px 0 #14478c" data-i18n="quitReasonBored">飽きた 😴</button>
-      <button class="go blue" id="btnQuitTime"   style="min-width:220px;font-size:17px;padding:8px 16px;box-shadow:0 5px 0 #14478c" data-i18n="quitReasonTime">時間がなくなった ⏰</button>
-      <button class="go blue" id="btnQuitOther"  style="min-width:220px;font-size:17px;padding:8px 16px;box-shadow:0 5px 0 #14478c" data-i18n="quitReasonOther">その他 🤔</button>
+      <button class="go red"  id="btnQuitConfirm" style="min-width:220px;font-size:18px;padding:10px 16px" data-i18n="quitConfirmYes">やめる</button>
+      <button class="go"      id="btnQuitCancel"  style="min-width:220px;font-size:18px;padding:10px 16px" data-i18n="quitConfirmNo">もどる</button>
     </div>
   </div>
 </div>
@@ -241,10 +239,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=22"></script>
-<script src="js/audio.js?v=22"></script>
-<script src="js/world.js?v=22"></script>
-<script src="js/net.js?v=22"></script>
-<script src="js/game.js?v=22"></script>
+<script src="js/data.js?v=23"></script>
+<script src="js/audio.js?v=23"></script>
+<script src="js/world.js?v=23"></script>
+<script src="js/net.js?v=23"></script>
+<script src="js/game.js?v=23"></script>
 </body>
 </html>

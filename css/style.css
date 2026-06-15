@@ -216,6 +216,8 @@ button.go.blue{background:linear-gradient(#54a9ff,#2475d8);box-shadow:0 7px 0 #1
 button.go.blue:active{box-shadow:0 2px 0 #14478c}
 button.go.green{background:linear-gradient(#42d77d,#1ea65a);box-shadow:0 7px 0 #11683a}
 button.go.green:active{box-shadow:0 2px 0 #11683a}
+button.go.red{background:linear-gradient(#ff6b6b,#d93025);box-shadow:0 7px 0 #8b1a10}
+button.go.red:active{box-shadow:0 2px 0 #8b1a10}
 button.btn2{font-size:17px;font-weight:900;color:#fff;cursor:pointer;background:rgba(255,255,255,.18);
   border:3px solid #fff;border-radius:30px;padding:8px 26px;transition:background .15s}
 button.btn2:hover{background:rgba(255,255,255,.32)}
