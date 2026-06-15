@@ -1,0 +1,6 @@
+docs/
+fix_*.js
+test_*.js
+*.md
+.git/
+node_modules/
