@@ -1325,10 +1325,6 @@ function showResult(win,stats){
   if(win)SAVE.wins=(SAVE.wins||0)+1;
   persist();
   saveDDASession(win,stats,rank,coins);
-  // Offer ranking registration if score is meaningful
-  game._pendingRankEntry = (stats.sc>0 && game.wave>=1) ?
-    {score:stats.sc,stage:game.stage,diff:game.diff,breed:game.breed||sel.breed||"shiba",
-     wave:game.wave,rank,win} : null;
   setTimeout(()=>{
     if(win) $("#resTitle").textContent=T("resWin");
     else if(game.diff==="endless") $("#resTitle").textContent="WAVE "+game.wave+" "+T("resEndless");
@@ -1353,101 +1349,6 @@ function showResult(win,stats){
   },1200);
 }
 
-/* =========================================================
-   RANKING
-   ========================================================= */
-function saveRankEntry(name, entry){
-  try{
-    const db=firebase.firestore();
-    db.collection("rankings").add({
-      name:name.slice(0,10)||"???",
-      score:entry.score,
-      stage:entry.stage,
-      diff:entry.diff,
-      breed:entry.breed,
-      wave:entry.wave,
-      rank:entry.rank,
-      win:entry.win,
-      ts:firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(()=>{});
-  }catch(e){}
-}
-
-let _rankUnsubscribe=null;
-function showRanking(fromResult){
-  const filterStage=$("#rankFilterStage").value||"all";
-  const filterDiff=$("#rankFilterDiff").value||"all";
-  const list=$("#rankingList");
-  list.innerHTML=`<div class="rankLoading">${T("rankLoading")}</div>`;
-  if(_rankUnsubscribe){_rankUnsubscribe();_rankUnsubscribe=null;}
-  try{
-    const db=firebase.firestore();
-    let q=db.collection("rankings").orderBy("score","desc").limit(50);
-    _rankUnsubscribe=q.onSnapshot(snap=>{
-      let docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-      if(filterStage!=="all") docs=docs.filter(d=>d.stage===filterStage);
-      if(filterDiff!=="all")  docs=docs.filter(d=>d.diff===filterDiff);
-      docs=docs.slice(0,20);
-      if(!docs.length){list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;return;}
-      const stageIcon={park:"🌳",beach:"🏖️",snow:"❄️"};
-      list.innerHTML=docs.map((d,i)=>{
-        const pos=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}`;
-        const posClass=i===0?"gold":i===1?"silver":i===2?"bronze":"";
-        return `<div class="rankRow">
-          <span class="rankPos ${posClass}">${pos}</span>
-          <span class="rankName">${d.name||"???"}</span>
-          <span class="rankMeta">${stageIcon[d.stage]||""} ${d.diff||""}</span>
-          <span class="rankScore">${(d.score||0).toLocaleString()}</span>
-        </div>`;
-      }).join("");
-    },()=>{list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;});
-  }catch(e){list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;}
-  show("#scrRanking");
-}
-
-// Ranking filter change
-["rankFilterStage","rankFilterDiff"].forEach(id=>{
-  $(("#"+id)).onchange=()=>showRanking(false);
-});
-
-// Ranking back button
-$("#btnRankingBack").onclick=()=>{
-  if(_rankUnsubscribe){_rankUnsubscribe();_rankUnsubscribe=null;}
-  toMenu();
-};
-
-// Menu ranking button
-$("#btnRanking").onclick=()=>{try{sfx.click();}catch(e){}showRanking(false);};
-
-// Result ranking button
-$("#btnResRanking").onclick=()=>{
-  try{sfx.click();}catch(e){}
-  const entry=game._pendingRankEntry;
-  if(entry){
-    // Show name entry modal
-    const saved=localStorage.getItem("dsq_name")||"";
-    $("#rankNameInput").value=saved;
-    $("#rankNameScore").textContent=`Score: ${entry.score.toLocaleString()}　Rank: ${entry.rank}`;
-    show("#scrRankName");
-  } else {
-    showRanking(true);
-  }
-};
-
-function submitRankName(){
-  const name=($("#rankNameInput").value||"").trim()||localStorage.getItem("dsq_name")||"???";
-  try{localStorage.setItem("dsq_name",name);}catch(e){}
-  const entry=game._pendingRankEntry;
-  if(entry) saveRankEntry(name,entry);
-  game._pendingRankEntry=null;
-  showRanking(true);
-}
-$("#btnRankNameOk").onclick=()=>{try{sfx.click();}catch(e){}submitRankName();};
-$("#btnRankNameSkip").onclick=()=>{
-  try{sfx.click();}catch(e){}
-  game._pendingRankEntry=null;
-  showRanking(true);
-};
 function toLobby(){
   cleanup();
   game.state="menu";

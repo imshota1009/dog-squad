@@ -6,9 +6,18 @@
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["game", "threejs", "tower-defense", "multiplayer", "websocket"],
+  "keywords": [
+    "game",
+    "threejs",
+    "tower-defense",
+    "multiplayer",
+    "websocket"
+  ],
   "license": "MIT",
   "dependencies": {
     "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "pptxgenjs": "^4.0.1"
   }
 }
