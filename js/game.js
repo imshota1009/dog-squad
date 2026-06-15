@@ -314,7 +314,10 @@ function healBase(n){
 }
 function setBaseHp(v){
   game.baseHp=v;
-  $("#hpfill").style.width=Math.max(0,game.baseHp/game.baseMax*100)+"%";
+  const pct=Math.max(0,game.baseHp/game.baseMax*100);
+  $("#hpfill").style.width=pct+"%";
+  $("#baseHpFloatFill").style.width=pct+"%";
+  $("#baseHpFloatText").textContent="❤️ "+Math.max(0,game.baseHp)+"/"+game.baseMax;
 }
 
 /* ---------- owner items ---------- */
@@ -894,6 +897,7 @@ function updatePlayer(dt){
     }
   }
 }
+const BUFF_MAX={dash:10,rapid:10,mega:10};
 function updateBuffs(dt){
   let html="";
   for(const k in game.buffs){
@@ -901,7 +905,9 @@ function updateBuffs(dt){
       game.buffs[k]-=dt;
       if(game.buffs[k]>0){
         const nm=k==="dash"?T("buffDash"):k==="rapid"?T("buffRapid"):T("buffMega");
-        html+='<div class="buff">'+nm+" "+game.buffs[k].toFixed(0)+'</div>';
+        const pct=Math.min(100,game.buffs[k]/(BUFF_MAX[k]||10)*100).toFixed(1);
+        const sec=game.buffs[k].toFixed(0);
+        html+=`<div class="buff">${nm} ${sec}s<div class="buff-bar-wrap"><div class="buff-bar" style="width:${pct}%"></div></div></div>`;
       }
     }
   }
@@ -1242,6 +1248,12 @@ function beginGame(cfg){
   }
   setBaseHp(game.baseHp);
   $("#score").textContent="0";
+  // 操作説明：ゲーム開始12秒後にフェードアウト
+  $("#ctrlHint").classList.remove("fadeout","hidden");
+  clearTimeout(game._ctrlHintTimer);
+  game._ctrlHintTimer=setTimeout(()=>$("#ctrlHint").classList.add("fadeout"),12000);
+  // 犬小屋HPバー表示
+  $("#baseHpFloat").classList.remove("hidden");
   setWaveHUD(1);
   updTrapHUD();
   $("#hud").classList.remove("hidden");
@@ -1687,8 +1699,19 @@ function loop(){
   }
   updateFX(dt,rawDt);
   updateCamera(rawDt);
-  if (renderer && scene && camera) {
+  if(renderer&&scene&&camera){
     renderer.render(scene,camera);
+    // 犬小屋の上にHPバーを追従させる
+    if(game.state==="play"||game.state==="pause"){
+      const baseWorld=V3(0,4.2,0);
+      const v=baseWorld.clone().project(camera);
+      const el=$("#baseHpFloat");
+      if(v.z<1){
+        el.style.left=((v.x*.5+.5)*innerWidth)+"px";
+        el.style.top=((-.5*v.y+.5)*innerHeight)+"px";
+        el.classList.remove("hidden");
+      }else{el.classList.add("hidden");}
+    }else{$("#baseHpFloat").classList.add("hidden");}
   }
 }
 

@@ -168,9 +168,27 @@ button{font-family:inherit}
   text-shadow:0 2px 0 rgba(0,0,0,.35)}
 #scorebox em{display:inline;font-style:normal;font-size:13px;letter-spacing:1px;margin-right:8px}
 #score{font-size:26px;vertical-align:-2px}
-#buffs{position:absolute;top:84px;right:18px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
-.buff{background:rgba(255,255,255,.9);color:#4a3622;font-weight:900;font-size:13px;
-  padding:4px 10px;border-radius:20px;border:2px solid #5b4632}
+#buffs{position:absolute;bottom:110px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:flex-end}
+.buff{background:rgba(0,0,0,.55);color:#ffe34d;font-weight:900;font-size:13px;
+  padding:5px 12px 5px 10px;border-radius:20px;border:2px solid #ffe34d;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.buff-bar-wrap{width:52px;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
+.buff-bar{height:100%;border-radius:3px;background:#ffe34d;transition:width .1s linear}
+
+/* 犬小屋フローティングHP */
+#baseHpFloat{position:absolute;pointer-events:none;transform:translate(-50%,-100%);text-align:center;z-index:5}
+#baseHpFloatBar{width:90px;height:9px;background:rgba(0,0,0,.45);border-radius:5px;overflow:hidden;border:2px solid rgba(255,255,255,.5)}
+#baseHpFloatFill{height:100%;border-radius:3px;background:linear-gradient(90deg,#ff5e7e,#ffb46b);transition:width .2s}
+#baseHpFloatText{font-size:12px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);margin-top:2px}
+
+/* 操作説明 */
+#ctrlHint{position:absolute;bottom:110px;right:14px;background:rgba(0,0,0,.5);border-radius:12px;padding:10px 14px;
+  font-size:12px;font-weight:800;color:#fff;pointer-events:none;transition:opacity .5s;z-index:5}
+#ctrlHint.fadeout{opacity:0}
+.ctrlRow{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ctrlRow:last-child{margin-bottom:0}
+.ctrlKey{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);border-radius:5px;
+  padding:1px 6px;font-size:11px;min-width:42px;text-align:center}
+.ctrlDesc{opacity:.85}
 #skills{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:12px}
 .sk{position:relative;width:80px;height:80px;background:rgba(255,255,255,.88);border:4px solid #5b4632;
   border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;

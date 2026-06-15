@@ -56,6 +56,7 @@ const I18N={
     trapSet:"落とし穴セット!",combo:"れんさ",homerun:"場外ホームラン!",chain:"チェイン!",
     buffDash:"ダッシュ",buffRapid:"れんしゃ",buffMega:"メガ爆風",
     menuBtn:"メニュー",
+    ctrlMove:"移動",ctrlFire:"骨ミサイル",ctrlBark:"わん！衝撃波",ctrlTrap:"落とし穴",ctrlPause:"ポーズ",
     coinUnit:"コイン",
     skillClick:"クリック",skillBark:"わん！",
     webglError:"ゲーム画面(WebGL)の初期化に失敗しているため、ゲームを開始できません。ブラウザを再読み込みするか、LINEやDiscordなどのアプリ内ブラウザではなく、ChromeやSafariなどの標準ブラウザで開き直してください。",
@@ -100,6 +101,7 @@ const I18N={
     trapSet:"Pit Trap Set!",combo:"Chain",homerun:"OUT OF THE PARK!",chain:"Chain!",
     buffDash:"Dash",buffRapid:"Rapid",buffMega:"Mega Blast",
     menuBtn:"Menu",
+    ctrlMove:"Move",ctrlFire:"Bone Missile",ctrlBark:"Woof Wave",ctrlTrap:"Pit Trap",ctrlPause:"Pause",
     coinUnit:"Coins",
     skillClick:"Click",skillBark:"Woof!",
     webglError:"WebGL initialization failed. Please reload the page or open in Chrome/Safari instead of an in-app browser (LINE, Discord, etc).",
@@ -119,8 +121,8 @@ const DIFFORDER=["easy","normal","hard","endless"];
 /* ---------- stages ---------- */
 const STAGES={
   park: {label:"いつもの公園",     label_en:"City Park",       desc:"基本のステージ。リスの入門部隊", desc_en:"The basic stage. Rookie squirrels.", ground:0x7ecb5a, path:0xd8c08a, sky:0x9adcf5, music:"park"},
-  beach:{label:"サンセットビーチ", label_en:"Sunset Beach",    desc:"ムササビ滑空部隊が来るぞ",       desc_en:"Watch out for gliding squirrels!",  ground:0xeed9a4, path:0xf7ecc9, sky:0xffc88a, music:"beach"},
-  snow: {label:"ゆきやま広場",     label_en:"Snowy Mountain",  desc:"重装リスだらけの最難関",         desc_en:"The toughest stage. Heavy armor!",  ground:0xeef4fb, path:0xd7e4f2, sky:0xbcd7f0, music:"snow"}
+  beach:{label:"サンセットビーチ", label_en:"Sunset Beach",    desc:"ムササビ滑空部隊が来るぞ",       desc_en:"Watch out for gliding squirrels!",  ground:0xc9a96e, path:0xdbb878, sky:0xe8894a, music:"beach"},
+  snow: {label:"ゆきやま広場",     label_en:"Snowy Mountain",  desc:"重装リスだらけの最難関",         desc_en:"The toughest stage. Heavy armor!",  ground:0xc8d8e8, path:0xb0c4d8, sky:0x7aaac8, music:"snow"}
 };
 const STAGEORDER=["park","beach","snow"];
 

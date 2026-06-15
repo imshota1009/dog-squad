@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DOG SQUAD: SQUIRREL SIEGE</title>
-<link rel="stylesheet" href="css/style.css?v=27">
+<link rel="stylesheet" href="css/style.css?v=28">
 </head>
 <body>
 <div id="game"></div>
@@ -27,6 +27,21 @@
 <div id="combo"></div>
 <div id="announce"></div>
 <div id="labels"></div>
+
+<!-- 犬小屋フローティングHPバー -->
+<div id="baseHpFloat" class="hidden">
+  <div id="baseHpFloatBar"><div id="baseHpFloatFill"></div></div>
+  <div id="baseHpFloatText">❤️ 10/10</div>
+</div>
+
+<!-- 操作説明 -->
+<div id="ctrlHint">
+  <div class="ctrlRow"><span class="ctrlKey">WASD</span><span class="ctrlDesc" data-i18n="ctrlMove">移動</span></div>
+  <div class="ctrlRow"><span class="ctrlKey">Click</span><span class="ctrlDesc" data-i18n="ctrlFire">骨ミサイル</span></div>
+  <div class="ctrlRow"><span class="ctrlKey">SPACE</span><span class="ctrlDesc" data-i18n="ctrlBark">わん！衝撃波</span></div>
+  <div class="ctrlRow"><span class="ctrlKey">E</span><span class="ctrlDesc" data-i18n="ctrlTrap">落とし穴</span></div>
+  <div class="ctrlRow"><span class="ctrlKey">ESC</span><span class="ctrlDesc" data-i18n="ctrlPause">ポーズ</span></div>
+</div>
 
 <!-- ============ MENU ============ -->
 <div id="scrMenu" class="scr">
@@ -275,10 +290,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=27"></script>
-<script src="js/audio.js?v=27"></script>
-<script src="js/world.js?v=27"></script>
-<script src="js/net.js?v=27"></script>
-<script src="js/game.js?v=27"></script>
+<script src="js/data.js?v=28"></script>
+<script src="js/audio.js?v=28"></script>
+<script src="js/world.js?v=28"></script>
+<script src="js/net.js?v=28"></script>
+<script src="js/game.js?v=28"></script>
 </body>
 </html>
