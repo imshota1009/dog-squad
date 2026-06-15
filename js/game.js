@@ -246,6 +246,18 @@ function bossDown(s){
   addScore(1000,s.g.position);
   if(game.mode==="host"&&Net.connected)
     Net.game({t:"ev",k:"bossdown",p:[p.x,p.y,p.z]});
+  // ボスが全員倒されたらウェーブクリア（残り雑魚は消去）
+  setTimeout(()=>{
+    const remainingBosses=squirrels.filter(sq=>sq.kind==="boss"&&sq.state!=="dead"&&!sq._crowned);
+    if(remainingBosses.length===0&&!game.waveDone){
+      // 残りの雑魚を消去してウェーブ終了
+      squirrels.filter(sq=>sq.state!=="dead").forEach(sq=>{
+        sq.state="dead";scene.remove(sq.g);
+      });
+      squirrels.length=0;
+      game.spawnQueue=[];
+    }
+  },1200); // slow-mo演出が終わってから
 }
 function bossDownFX(pos){
   game.timeScale=.22;game.slowT=1.1;
@@ -351,8 +363,14 @@ addEventListener("keydown",e=>{
   keys[e.code]=true;
   if(e.code==="Space"&&game.state==="play"){e.preventDefault();doPlayerBark();}
   if(e.code==="KeyE"&&game.state==="play")tryPlaceTrap();
+  if(e.code==="Escape"){
+    if(game.state==="play"){game.state="pause";show("#scrPause");}
+    else if(game.state==="pause"){game.state="play";show(null);}
+  }
 });
 addEventListener("keyup",e=>keys[e.code]=false);
+// キーが押しっぱなしになるバグを防ぐ：ウィンドウがフォーカスを失ったら全キーリセット
+addEventListener("blur",()=>{for(const k in keys)keys[k]=false;});
 const mouseNDC=new THREE.Vector2();
 const raycaster=new THREE.Raycaster();
 const groundPlane=new THREE.Plane(V3(0,1,0),0);
@@ -1596,14 +1614,17 @@ function loop(){
   if(game.state==="play"){
     game.time+=dt;
     $("#timer").textContent=game.time.toFixed(1)+" s";
-    // 15 minute (900 sec) forced end by owner
-    if(game.time>=900 && game.state==="play"){
-      game.state="ending";
+    // 残り敵数表示
+    const alive=squirrels.filter(s=>s.state!=="dead").length;
+    const queued=game.spawnQueue.length;
+    const total=alive+queued;
+    $("#enemyCount").textContent=total>0?"🐿 "+total:" ";
+    // 15 minute (900 sec) forced end — non-endless only
+    if(game.time>=900 && !isEndless()){
+      game.state="play"; // ensure endGame won't be blocked
       announceW(T("snackTime"), T("snackTimeSub"), 2.2);
       sfx.fanfare();
-      setTimeout(()=>{
-        endGame(true);
-      },2200);
+      setTimeout(()=>{endGame(true);},2200);
     }
     updateAim();
     updatePlayer(dt);

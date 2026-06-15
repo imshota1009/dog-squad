@@ -162,6 +162,7 @@ button{font-family:inherit}
 #wavebox{position:absolute;top:12px;left:50%;transform:translateX(-50%);text-align:center;color:#fff;
   text-shadow:0 2px 0 rgba(0,0,0,.35);font-weight:900}
 #wave{font-size:30px;letter-spacing:2px}
+#enemyCount{display:block;font-size:14px;opacity:.85;color:#ffe34d}
 #timer{display:block;font-size:16px;opacity:.95}
 #scorebox{position:absolute;top:48px;left:16px;text-align:left;color:#fff;font-weight:900;
   text-shadow:0 2px 0 rgba(0,0,0,.35)}
