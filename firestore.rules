@@ -12,10 +12,10 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if false;
     }
-    // Rankings — anyone can read & create, no editing
+    // Rankings — read/create/update allowed (transactions need update for upsert)
     match /rankings/{entryId} {
-      allow read, create: if true;
-      allow update, delete: if false;
+      allow read, create, update: if true;
+      allow delete: if false;
     }
   }
 }

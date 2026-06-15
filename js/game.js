@@ -1360,13 +1360,21 @@ function showResult(win,stats){
 function saveRankEntry(name){
   const e=game._pendingRank;
   if(!e)return;
+  const safeName=name.slice(0,10).replace(/[^a-zA-Z0-9ぁ-んァ-ン一-龥\-_]/g,"_")||"guest";
+  // doc ID = name_stage_diff → 1人1枠、自己ベストのみ保存
+  const docId=(safeName+"_"+e.stage+"_"+e.diff).replace(/\s+/g,"_");
   try{
     const db=firebase.firestore();
-    db.collection("rankings").add({
-      name:name.slice(0,10)||"???",
-      score:e.score,stage:e.stage,diff:e.diff,
-      breed:e.breed,wave:e.wave,rank:e.rank,win:e.win,
-      ts:firebase.firestore.FieldValue.serverTimestamp()
+    const ref=db.collection("rankings").doc(docId);
+    db.runTransaction(async t=>{
+      const doc=await t.get(ref);
+      if(!doc.exists||doc.data().score<e.score){
+        t.set(ref,{
+          name:safeName,score:e.score,stage:e.stage,diff:e.diff,
+          breed:e.breed,wave:e.wave,rank:e.rank,win:e.win,
+          ts:firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
     }).catch(()=>{});
   }catch(ex){}
   game._pendingRank=null;
