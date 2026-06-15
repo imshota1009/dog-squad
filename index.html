@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DOG SQUAD: SQUIRREL SIEGE</title>
-<link rel="stylesheet" href="css/style.css?v=23">
+<link rel="stylesheet" href="css/style.css?v=24">
 </head>
 <body>
 <div id="game"></div>
@@ -45,8 +45,9 @@
       <button class="go blue" id="btnMulti" disabled style="opacity:.5;cursor:default;box-shadow:0 7px 0 #14478c">みんなで遊ぶ（最大6人）<br><small style="font-size:14px;font-weight:700" id="btnMultiSub">🚧 準備中</small></button>
       <button class="go green" id="btnShop" data-i18n="btnShop">飼い主のショップ</button>
     </div>
-    <div style="margin-top:10px">
+    <div style="margin-top:10px;display:flex;gap:10px;justify-content:center">
       <button class="btn2" id="btnSettings" data-i18n="btnSettings">⚙ 設定</button>
+      <button class="btn2" id="btnRanking" data-i18n="btnRanking">🏆 ランキング</button>
     </div>
     <div class="ctrl" id="ctrlText" data-i18n-html="ctrlText">WASD / 矢印キー：移動　|　マウス：ねらう　|　クリック：骨ミサイル<br>
       SPACE：ワン!衝撃波　|　E / 右クリック：落とし穴　|　犬小屋を守れ！</div>
@@ -217,9 +218,44 @@
     <div class="logo" id="resTitle" style="font-size:40px">公園防衛 大成功！</div>
     <div id="resRank">S</div>
     <div id="resStats"></div>
+    <div id="resRankEntry" style="margin:14px 0 6px">
+      <div style="font-size:13px;font-weight:800;opacity:.8;margin-bottom:8px" data-i18n="rankEntryLabel">🏆 ランキングに登録しよう！</div>
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center">
+        <input class="txt" id="rankNameInput" maxlength="10" placeholder="なまえ（10文字まで）" style="font-size:16px;width:200px;text-align:center">
+        <button class="go green" id="btnRankSubmit" style="font-size:15px;padding:8px 18px" data-i18n="rankSubmit">登録！</button>
+      </div>
+      <div id="rankSubmitMsg" style="font-size:13px;margin-top:6px;min-height:18px"></div>
+    </div>
     <div class="resBtns">
       <button class="go" id="btnRetry" data-i18n="btnRetry">もういちど！</button>
-<button class="go blue" id="btnMenu" data-i18n="btnToMenu">メニューへ</button>
+      <button class="go blue" id="btnResRanking" data-i18n="btnResRanking" style="box-shadow:0 7px 0 #14478c">🏆 ランキング</button>
+      <button class="go blue" id="btnMenu" data-i18n="btnToMenu" style="box-shadow:0 7px 0 #14478c">メニューへ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RANKING ============ -->
+<div id="scrRanking" class="scr hidden">
+  <div class="panel" style="max-width:480px">
+    <div class="h2" data-i18n="rankingTitle">🏆 ランキング</div>
+    <div class="rankFilters">
+      <select class="rankSelect" id="rankFilterStage">
+        <option value="all" data-i18n="rankAll">すべて</option>
+        <option value="park">🌳 公園</option>
+        <option value="beach">🏖️ ビーチ</option>
+        <option value="snow">❄️ 雪山</option>
+      </select>
+      <select class="rankSelect" id="rankFilterDiff">
+        <option value="all" data-i18n="rankAll">すべて</option>
+        <option value="easy">やさしい</option>
+        <option value="normal">ふつう</option>
+        <option value="hard">むずかしい</option>
+        <option value="endless">エンドレス</option>
+      </select>
+    </div>
+    <div class="rankingList" id="rankingList"><div class="rankLoading" data-i18n="rankLoading">読み込み中…</div></div>
+    <div style="margin-top:16px">
+      <button class="btn2" id="btnRankingBack" data-i18n="btnBack">もどる</button>
     </div>
   </div>
 </div>
@@ -239,10 +275,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=23"></script>
-<script src="js/audio.js?v=23"></script>
-<script src="js/world.js?v=23"></script>
-<script src="js/net.js?v=23"></script>
-<script src="js/game.js?v=23"></script>
+<script src="js/data.js?v=24"></script>
+<script src="js/audio.js?v=24"></script>
+<script src="js/world.js?v=24"></script>
+<script src="js/net.js?v=24"></script>
+<script src="js/game.js?v=24"></script>
 </body>
 </html>

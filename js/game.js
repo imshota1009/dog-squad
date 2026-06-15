@@ -1343,10 +1343,78 @@ function showResult(win,stats){
       $("#btnMenu").textContent=T("btnToMenu");
       $("#btnMenu").onclick=()=>toMenu();
     }
+    // ranking entry area — store result for submission
+    game._pendingRank={win,score:stats.sc,stage:game.stage,diff:game.diff,breed:game.breed||sel.breed,wave:game.wave,rank};
+    $("#rankSubmitMsg").textContent="";
+    $("#rankNameInput").value=localStorage.getItem("dsq_name")||"";
+    // restore label text
+    $("#rankEntryLabel")||($(".resRankEntryLabel")&&($(".resRankEntryLabel").textContent=T("rankEntryLabel")));
+    $("#resRankEntry").classList.remove("hidden");
+    $("#btnRankSubmit").disabled=false;
+    $("#btnRankSubmit").textContent=T("rankSubmit");
     $("#hud").classList.add("hidden");
     show("#scrResult");
   },1200);
 }
+
+function saveRankEntry(name){
+  const e=game._pendingRank;
+  if(!e)return;
+  try{
+    const db=firebase.firestore();
+    db.collection("rankings").add({
+      name:name.slice(0,10)||"???",
+      score:e.score,stage:e.stage,diff:e.diff,
+      breed:e.breed,wave:e.wave,rank:e.rank,win:e.win,
+      ts:firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+  }catch(ex){}
+  game._pendingRank=null;
+}
+
+let _rankUnsubscribe=null;
+function showRanking(){
+  const filterStage=$("#rankFilterStage").value||"all";
+  const filterDiff=$("#rankFilterDiff").value||"all";
+  const list=$("#rankingList");
+  list.innerHTML=`<div class="rankLoading">${T("rankLoading")}</div>`;
+  if(_rankUnsubscribe){_rankUnsubscribe();_rankUnsubscribe=null;}
+  try{
+    const db=firebase.firestore();
+    _rankUnsubscribe=db.collection("rankings").orderBy("score","desc").limit(100).onSnapshot(snap=>{
+      let docs=snap.docs.map(d=>({...d.data()}));
+      if(filterStage!=="all")docs=docs.filter(d=>d.stage===filterStage);
+      if(filterDiff!=="all") docs=docs.filter(d=>d.diff===filterDiff);
+      docs=docs.slice(0,20);
+      if(!docs.length){list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;return;}
+      const si={park:"🌳",beach:"🏖️",snow:"❄️"};
+      list.innerHTML=docs.map((d,i)=>{
+        const pos=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}`;
+        const pc=i===0?"gold":i===1?"silver":i===2?"bronze":"";
+        return `<div class="rankRow"><span class="rankPos ${pc}">${pos}</span><span class="rankName">${d.name||"???"}</span><span class="rankMeta">${si[d.stage]||""} ${d.diff||""}</span><span class="rankScore">${(d.score||0).toLocaleString()}</span></div>`;
+      }).join("");
+    },()=>{list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;});
+  }catch(_){list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;}
+  show("#scrRanking");
+}
+
+["rankFilterStage","rankFilterDiff"].forEach(id=>{
+  $("#"+id).onchange=()=>showRanking();
+});
+$("#btnRankingBack").onclick=()=>{
+  if(_rankUnsubscribe){_rankUnsubscribe();_rankUnsubscribe=null;}
+  toMenu();
+};
+$("#btnRanking").onclick=()=>{try{sfx.click();}catch(e){}showRanking();};
+$("#btnResRanking").onclick=()=>{try{sfx.click();}catch(e){}showRanking();};
+$("#btnRankSubmit").onclick=()=>{
+  const name=($("#rankNameInput").value||"").trim();
+  if(!name){$("#rankSubmitMsg").textContent="名前を入力してね！";return;}
+  try{localStorage.setItem("dsq_name",name);}catch(e){}
+  saveRankEntry(name);
+  $("#btnRankSubmit").disabled=true;
+  $("#rankSubmitMsg").textContent="✅ 登録しました！";
+};
 
 function toLobby(){
   cleanup();
