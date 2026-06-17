@@ -1410,6 +1410,16 @@ function saveRankEntry(name){
   game._pendingRank=null;
 }
 
+function getTierInfo(pos){
+  // pos は 0始まり
+  if(pos===0)   return {label:"LEGEND",  icon:"👑", cls:"tier-legend"};
+  if(pos<=4)    return {label:"DIAMOND", icon:"💎", cls:"tier-diamond"};
+  if(pos<=9)    return {label:"PLATINUM",icon:"💜", cls:"tier-platinum"};
+  if(pos<=19)   return {label:"GOLD",    icon:"🥇", cls:"tier-gold"};
+  if(pos<=34)   return {label:"SILVER",  icon:"🥈", cls:"tier-silver"};
+  return             {label:"BRONZE",  icon:"🥉", cls:"tier-bronze"};
+}
+
 let _rankUnsubscribe=null;
 function showRanking(){
   const filterStage=$("#rankFilterStage").value||"all";
@@ -1419,17 +1429,22 @@ function showRanking(){
   if(_rankUnsubscribe){_rankUnsubscribe();_rankUnsubscribe=null;}
   try{
     const db=firebase.firestore();
-    _rankUnsubscribe=db.collection("rankings").orderBy("score","desc").limit(100).onSnapshot(snap=>{
+    _rankUnsubscribe=db.collection("rankings").orderBy("score","desc").limit(200).onSnapshot(snap=>{
       let docs=snap.docs.map(d=>({...d.data()}));
       if(filterStage!=="all")docs=docs.filter(d=>d.stage===filterStage);
       if(filterDiff!=="all") docs=docs.filter(d=>d.diff===filterDiff);
-      docs=docs.slice(0,20);
+      docs=docs.slice(0,50);
       if(!docs.length){list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;return;}
       const si={park:"🌳",beach:"🏖️",snow:"❄️"};
       list.innerHTML=docs.map((d,i)=>{
-        const pos=i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}`;
-        const pc=i===0?"gold":i===1?"silver":i===2?"bronze":"";
-        return `<div class="rankRow"><span class="rankPos ${pc}">${pos}</span><span class="rankName">${d.name||"???"}</span><span class="rankMeta">${si[d.stage]||""} ${d.diff||""}</span><span class="rankScore">${(d.score||0).toLocaleString()}</span></div>`;
+        const tier=getTierInfo(i);
+        return `<div class="rankRow">
+          <span class="rankPos">${i+1}</span>
+          <span class="rankTierBadge ${tier.cls}">${tier.icon} ${tier.label}</span>
+          <span class="rankName">${d.name||"???"}</span>
+          <span class="rankMeta">${si[d.stage]||""} ${d.diff||""}</span>
+          <span class="rankScore">${(d.score||0).toLocaleString()}</span>
+        </div>`;
       }).join("");
     },()=>{list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;});
   }catch(_){list.innerHTML=`<div class="rankEmpty">${T("rankEmpty")}</div>`;}

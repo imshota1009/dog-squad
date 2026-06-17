@@ -312,17 +312,21 @@ input.txt.code{text-transform:uppercase;letter-spacing:6px;width:160px}
 .rankFilters{display:flex;gap:10px;justify-content:center;margin:12px 0 16px}
 .rankSelect{background:#fff3;color:#fff;border:2px solid #fff4;border-radius:10px;padding:6px 14px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;outline:none}
 .rankSelect option{background:#3a5a3a;color:#fff}
-.rankingList{min-height:220px;max-height:340px;overflow-y:auto}
+.rankingList{min-height:220px;max-height:420px;overflow-y:auto}
 .rankLoading{text-align:center;padding:40px 0;font-size:18px;opacity:.6}
-.rankRow{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;margin-bottom:6px;background:rgba(255,255,255,.12);font-size:15px;font-weight:800}
-.rankPos{width:32px;text-align:center;font-size:18px;font-weight:900;color:#ffe34d;flex-shrink:0}
-.rankPos.gold{color:#ffd700;font-size:22px}
-.rankPos.silver{color:#c0c0c0;font-size:20px}
-.rankPos.bronze{color:#cd7f32;font-size:19px}
+.rankRow{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;margin-bottom:5px;background:rgba(255,255,255,.12);font-size:14px;font-weight:800}
+.rankPos{width:26px;text-align:center;font-size:13px;font-weight:900;color:#ffe34d;flex-shrink:0;opacity:.8}
 .rankName{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rankScore{color:#ffe34d;font-size:17px;flex-shrink:0}
 .rankMeta{font-size:11px;opacity:.65;flex-shrink:0}
 .rankEmpty{text-align:center;padding:40px 0;font-size:16px;opacity:.55}
+.rankTierBadge{font-size:11px;font-weight:900;padding:2px 7px;border-radius:10px;flex-shrink:0;letter-spacing:.5px}
+.tier-legend {background:#ff9900;color:#fff;box-shadow:0 0 8px #ff990088}
+.tier-diamond{background:#00cfff;color:#003a4a}
+.tier-platinum{background:#b47fff;color:#fff}
+.tier-gold   {background:#ffd700;color:#5a3e00}
+.tier-silver {background:#c0c0c0;color:#333}
+.tier-bronze {background:#cd7f32;color:#fff}
 
 /* =====================================================
    SETTINGS SCREEN
