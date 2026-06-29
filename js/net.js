@@ -41,7 +41,7 @@ const Net = {
       this.myPlayerId = "1";
       this.host = true;
 
-      const pInfo = { id: 1, name: o.name || "イヌ", breed: "shiba", uid: myUid };
+      const pInfo = { id: 1, name: o.name || "イヌ", breed: "shiba", skin: o.skin || null, costume: o.costume || null, effect: o.effect || null, uid: myUid };
       this.players = [pInfo];
 
       const roomRef = db.collection("dog_squad_rooms").doc(code);
@@ -95,7 +95,7 @@ const Net = {
       this.myPlayerId = String(nextId);
       this.host = false;
 
-      const newPlayer = { id: nextId, name: o.name || "イヌ", breed: "shiba", uid: myUid };
+      const newPlayer = { id: nextId, name: o.name || "イヌ", breed: "shiba", skin: o.skin || null, costume: o.costume || null, effect: o.effect || null, uid: myUid };
       const updatedPlayers = [...data.players, newPlayer];
 
       await roomRef.update({
@@ -124,6 +124,9 @@ const Net = {
         const players = data.players.map(p => {
           if (p.id === this.id) {
             p.breed = o.breed;
+            p.skin = o.skin || null;
+            p.costume = o.costume || null;
+            p.effect = o.effect || null;
           }
           return p;
         });

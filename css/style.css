@@ -320,13 +320,218 @@ input.txt.code{text-transform:uppercase;letter-spacing:6px;width:160px}
 .rankScore{color:#ffe34d;font-size:17px;flex-shrink:0}
 .rankMeta{font-size:11px;opacity:.65;flex-shrink:0}
 .rankEmpty{text-align:center;padding:40px 0;font-size:16px;opacity:.55}
-.rankTierBadge{font-size:11px;font-weight:900;padding:2px 7px;border-radius:10px;flex-shrink:0;letter-spacing:.5px}
-.tier-legend {background:#ff9900;color:#fff;box-shadow:0 0 8px #ff990088}
-.tier-diamond{background:#00cfff;color:#003a4a}
-.tier-platinum{background:#b47fff;color:#fff}
-.tier-gold   {background:#ffd700;color:#5a3e00}
-.tier-silver {background:#c0c0c0;color:#333}
-.tier-bronze {background:#cd7f32;color:#fff}
+.rankTierBadge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;padding:3px 8px;border-radius:10px;flex-shrink:0;letter-spacing:.5px}
+.tier-supreme {background:linear-gradient(135deg,#ffd700,#ff8c00);color:#3a1a00;box-shadow:0 0 10px #ffd70088}
+.tier-ace     {background:linear-gradient(135deg,#e040fb,#7b1fa2);color:#fff;box-shadow:0 0 8px #e040fb66}
+.tier-veteran {background:linear-gradient(135deg,#29b6f6,#0277bd);color:#fff}
+.tier-guard   {background:linear-gradient(135deg,#66bb6a,#2e7d32);color:#fff}
+.tier-rookie  {background:#8d6e63;color:#fff}
+.tier-pup     {background:#546e7a;color:#fff}
+
+/* ---- tier icon base ---- */
+.tier-icon{display:inline-flex;align-items:center;gap:2px;position:relative}
+
+/* SUPREME: 王冠 + 星2つ が輝く */
+.tier-icon--supreme .ti-crown{
+  display:inline-block;width:14px;height:10px;position:relative;
+  border-left:3px solid #3a1a00;border-right:3px solid #3a1a00;border-bottom:3px solid #3a1a00;
+  border-radius:0 0 2px 2px;
+}
+.tier-icon--supreme .ti-crown::before{
+  content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+  border-left:3px solid transparent;border-right:3px solid transparent;border-bottom:5px solid #3a1a00;
+}
+.tier-icon--supreme .ti-star{
+  display:inline-block;width:8px;height:8px;
+  background:#3a1a00;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  animation:starPulse 1.2s ease-in-out infinite alternate;
+}
+.tier-icon--supreme .ti-star:nth-child(3){animation-delay:.4s}
+@keyframes starPulse{from{transform:scale(1);opacity:.7}to{transform:scale(1.3);opacity:1}}
+
+/* ACE HOUND: 骨が回る */
+.tier-icon--ace .ti-bone{
+  display:inline-block;width:14px;height:6px;position:relative;
+  background:#fff;border-radius:3px;
+  animation:boneSpin 2s linear infinite;
+}
+.tier-icon--ace .ti-bone::before,.tier-icon--ace .ti-bone::after{
+  content:'';position:absolute;width:6px;height:6px;background:#fff;border-radius:50%;top:-1.5px;
+}
+.tier-icon--ace .ti-bone::before{left:-2px}
+.tier-icon--ace .ti-bone::after{right:-2px}
+@keyframes boneSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* VETERAN: 盾が点滅 */
+.tier-icon--veteran .ti-shield{
+  display:inline-block;width:12px;height:14px;
+  background:#fff;clip-path:polygon(50% 0%,100% 15%,100% 55%,50% 100%,0% 55%,0% 15%);
+  animation:shieldGlow .9s ease-in-out infinite alternate;
+}
+@keyframes shieldGlow{from{opacity:.6;transform:scale(.95)}to{opacity:1;transform:scale(1.05)}}
+
+/* GUARD DOG: 肉球が弾む */
+.tier-icon--guard .ti-paw{
+  display:inline-block;width:12px;height:12px;position:relative;
+  background:#fff;border-radius:50% 50% 45% 45%;
+  animation:pawBounce .8s ease-in-out infinite alternate;
+}
+.tier-icon--guard .ti-paw::before{
+  content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%);
+  width:5px;height:5px;background:#fff;border-radius:50%;
+  box-shadow:-5px 1px 0 #fff,5px 1px 0 #fff;
+}
+@keyframes pawBounce{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+
+/* ROOKIE: タグが揺れる */
+.tier-icon--rookie .ti-tag{
+  display:inline-block;width:11px;height:11px;
+  background:#fff;border-radius:2px;
+  clip-path:polygon(0 0,80% 0,100% 50%,80% 100%,0 100%);
+  animation:tagSwing 1.2s ease-in-out infinite alternate;
+  transform-origin:left center;
+}
+@keyframes tagSwing{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+
+/* PUP: ボールが跳ねる */
+.tier-icon--pup .ti-ball{
+  display:inline-block;width:10px;height:10px;
+  background:#fff;border-radius:50%;
+  animation:ballBounce .7s cubic-bezier(.36,.07,.19,.97) infinite alternate;
+}
+@keyframes ballBounce{from{transform:translateY(0) scale(1,1)}to{transform:translateY(-5px) scale(1.1,.9)}}
+
+/* =====================================================
+   SKIN SHOP
+   ===================================================== */
+.shopTabs{display:flex;gap:6px;margin-bottom:12px}
+.shopTab{flex:1;padding:8px 0;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:#1e2a1e;color:#6b9b6b;transition:.2s}
+.shopTab.active{background:#4a9a4a;color:#fff}
+#skinList{width:100%}
+.skinSection{margin-bottom:16px}
+.skinBreedTitle{font-size:12px;font-weight:700;color:#ffe34d;letter-spacing:.5px;margin-bottom:8px;opacity:.8}
+.skinCard{display:flex;align-items:center;gap:10px;background:#1a2a1a;border-radius:12px;padding:8px 12px;margin-bottom:8px;border:2px solid transparent;transition:.2s}
+.skinCard.equipped{border-color:#4a9a4a;background:#1e3a1e}
+.skinSwatch{display:flex;gap:3px;align-items:center;flex-shrink:0}
+.skinBody{width:22px;height:22px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.skinChest{width:14px;height:14px;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.skinBand{width:10px;height:10px;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.skinInfo{flex:1;font-size:13px;font-weight:600;color:#e8e8e8}
+.skinBtn{padding:5px 12px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;background:#4a9a4a;color:#fff;white-space:nowrap;transition:.15s}
+.skinBtn:hover:not(:disabled){filter:brightness(1.15)}
+.skinBtn:disabled{background:#2d3d2d;color:#555;cursor:default}
+.skinEquipped{background:#ffe34d;color:#3a2a00}
+.skinOwned{background:#29b6f6;color:#002a3a}
+.skinLocked{background:#2d3d2d;color:#555}
+
+/* =====================================================
+   SKIN SHOP v2 — layout & cards
+   ===================================================== */
+#skinShopLayout { width:100%; }
+
+#skinSaleBar {
+  background: linear-gradient(90deg,#c0392b,#e74c3c);
+  color:#fff; font-size:12px; font-weight:700;
+  padding:6px 12px; border-radius:8px; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.saleTimerIcon {
+  background:#fff; color:#c0392b; font-size:10px; font-weight:900;
+  padding:2px 6px; border-radius:4px; flex-shrink:0;
+}
+
+.skinShopBody {
+  display:flex; gap:12px; align-items:flex-start;
+}
+.skinLeftPanel {
+  flex:1; min-width:0; display:flex; flex-direction:column; gap:8px;
+}
+.skinRightPanel {
+  width:200px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+
+/* Breed tabs */
+#skinBreedTabs {
+  display:flex; flex-wrap:wrap; gap:4px;
+}
+.skinBreedTab {
+  position:relative; padding:5px 10px; border:none; border-radius:8px;
+  font-size:11px; font-weight:700; cursor:pointer;
+  background:#1e2e1e; color:#7ab87a; transition:.15s;
+}
+.skinBreedTab.active { background:#4a9a4a; color:#fff; }
+.skinBreedEquippedDot {
+  position:absolute; top:3px; right:3px;
+  width:6px; height:6px; background:#ffe34d; border-radius:50%;
+}
+
+/* Skin cards v2 */
+#skinCardList { display:flex; flex-direction:column; gap:6px; max-height:480px; overflow-y:auto; padding-right:2px; }
+#skinCardList::-webkit-scrollbar{width:4px}
+#skinCardList::-webkit-scrollbar-thumb{background:#3a5a3a;border-radius:2px}
+
+.skinCard2 {
+  display:flex; align-items:center; gap:8px;
+  background:#1a2a1a; border:2px solid transparent;
+  border-radius:10px; padding:7px 10px; cursor:pointer;
+  transition:.15s; position:relative;
+}
+.skinCard2:hover { border-color:#3a6a3a; background:#1e301e; }
+.skinCard2.equipped2 { border-color:#4a9a4a; background:#1e3a1e; }
+.skinCard2.previewing { border-color:#ffe34d; }
+
+.skinSwatch2 { display:flex; gap:2px; align-items:center; flex-shrink:0; }
+.skinSwBody  { width:20px; height:20px; border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,.5); }
+.skinSwChest { width:14px; height:14px; border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,.5); }
+.skinSwBand  { width:10px; height:10px; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,.5); }
+
+.skinCard2Info { flex:1; min-width:0; }
+.skinCard2Name { font-size:12px; font-weight:700; color:#e8e8e8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.skinCard2Rarity { font-size:9px; font-weight:700; margin-top:2px; }
+
+.saleTag {
+  font-size:10px; font-weight:900; color:#fff;
+  background:#e74c3c; padding:2px 5px; border-radius:4px; flex-shrink:0;
+}
+
+.skinCard2Btn {
+  padding:4px 10px; border:none; border-radius:7px;
+  font-size:11px; font-weight:700; cursor:pointer;
+  white-space:nowrap; flex-shrink:0; transition:.15s;
+}
+.skinCard2Btn:hover:not(:disabled){filter:brightness(1.15)}
+.skinCard2Btn:disabled{opacity:.5;cursor:default}
+.sk-equipped { background:#ffe34d; color:#3a2a00; }
+.sk-owned    { background:#29b6f6; color:#002a3a; }
+.sk-buy      { background:#4a9a4a; color:#fff; }
+.sk-locked   { background:#2a3a2a; color:#556655; }
+
+/* 3D preview canvas */
+#skinPreviewCanvas {
+  border-radius:12px;
+  background: radial-gradient(circle at 50% 60%, #1a3a1a, #0a1a0a);
+  display:block;
+}
+
+/* Preview info panel */
+#skinPreviewInfo {
+  width:100%; text-align:center; padding:8px 4px;
+  background:#1a2a1a; border-radius:10px;
+}
+.prevInfoBreed { font-size:10px; color:#7ab87a; opacity:.8; }
+.prevInfoName  { font-size:15px; font-weight:800; color:#e8e8e8; margin:2px 0; }
+.prevInfoRarity{ font-size:11px; font-weight:700; margin-bottom:4px; }
+.prevInfoSale  { background:#e74c3c; color:#fff; font-size:10px; font-weight:900; padding:2px 8px; border-radius:4px; display:inline-block; margin-bottom:4px; }
+.prevInfoPrice { font-size:13px; color:#e8e8e8; }
+.prevOldPrice  { text-decoration:line-through; opacity:.5; margin-right:4px; font-size:11px; }
+.prevFinalPrice{ font-weight:700; color:#ffe34d; }
+
+/* rarity colors (reused) */
+.rarity-common { color:#aaaaaa; }
+.rarity-rare   { color:#29b6f6; }
+.rarity-epic   { background:linear-gradient(90deg,#7b2fff,#ff00ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.rarity-legendary { background:linear-gradient(90deg,#ffd700,#ff8c00,#ffd700); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:legendaryShimmer 2s ease-in-out infinite; background-size:200% 100%; }
+@keyframes legendaryShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
 /* =====================================================
    SETTINGS SCREEN
@@ -348,6 +553,43 @@ input.txt.code{text-transform:uppercase;letter-spacing:6px;width:160px}
 .volSlider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;
   background:#ffe34d;border:3px solid #c07a00;cursor:pointer}
 .volVal{font-size:15px;font-weight:900;min-width:44px;text-align:right}
+
+/* =====================================================
+   SKIN SHOP — RARITY, SALE, PREVIEW
+   ===================================================== */
+.skinSaleHeader{font-size:12px;font-weight:800;color:#ffe34d;background:rgba(0,0,0,.25);
+  border-radius:10px;padding:7px 14px;margin-bottom:10px;text-align:center}
+.skinInfo{flex:1;display:flex;flex-direction:column;gap:3px}
+.skinInfo b{font-size:13px;font-weight:700;color:#e8e8e8}
+.rarityBadgeSmall{display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:6px;letter-spacing:.5px;width:fit-content}
+.rarityBadgeSmall.rarity-common{background:#555;color:#ccc}
+.rarityBadgeSmall.rarity-rare{background:#29b6f6;color:#002a3a}
+.rarityBadgeSmall.rarity-epic{background:linear-gradient(90deg,#7b2fff,#ff00ff);color:#fff}
+.rarityBadgeSmall.rarity-legendary{background:linear-gradient(90deg,#ffd700,#ff8c00);color:#3a1a00;box-shadow:0 0 8px rgba(255,215,0,.5)}
+.saleCardBadge{font-size:9px;font-weight:900;background:#ff4757;color:#fff;padding:2px 5px;border-radius:5px;flex-shrink:0;align-self:center}
+
+/* preview overlay */
+.skinPreviewOverlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center}
+.skinPreviewBox{position:relative;background:linear-gradient(135deg,#1a2a1a,#0d1a0d);border:2px solid rgba(255,255,255,.2);
+  border-radius:20px;padding:30px 36px;min-width:260px;text-align:center;color:#fff;box-shadow:0 8px 40px rgba(0,0,0,.7)}
+.skinPreviewClose{position:absolute;top:10px;right:14px;background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;font-weight:900;padding:0 4px}
+.skinPreviewClose:hover{color:#fff}
+.saleBigBadge{background:linear-gradient(90deg,#ff4757,#ff6b6b);color:#fff;font-size:16px;font-weight:900;
+  padding:4px 18px;border-radius:20px;margin-bottom:12px;display:inline-block;letter-spacing:1px}
+.skinPreviewSwatches{display:flex;gap:10px;align-items:center;justify-content:center;margin:14px 0}
+.skinPreviewBody{width:60px;height:60px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.skinPreviewChest{width:40px;height:40px;border-radius:8px;box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.skinPreviewBand{width:30px;height:30px;border-radius:50%;box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.skinPreviewName{font-size:20px;font-weight:900;margin:8px 0 6px;letter-spacing:.5px}
+.rarityBadge{display:inline-block;font-size:12px;font-weight:900;padding:3px 12px;border-radius:20px;letter-spacing:1px;margin-bottom:10px}
+.rarityBadge.rarity-common{background:#555;color:#ccc}
+.rarityBadge.rarity-rare{background:#29b6f6;color:#002a3a}
+.rarityBadge.rarity-epic{background:linear-gradient(90deg,#7b2fff,#ff00ff);color:#fff}
+.rarityBadge.rarity-legendary{background:linear-gradient(90deg,#ffd700,#ff8c00);color:#3a1a00;box-shadow:0 0 12px rgba(255,215,0,.6);animation:legendaryBadgePulse 1.5s ease-in-out infinite}
+@keyframes legendaryBadgePulse{0%,100%{box-shadow:0 0 8px rgba(255,215,0,.4)}50%{box-shadow:0 0 18px rgba(255,215,0,.8)}}
+.skinPreviewPrice{font-size:16px;font-weight:900;margin-top:8px}
+.skinPriceOld{text-decoration:line-through;opacity:.5;font-size:14px;margin-right:4px}
+.skinPriceFinal{color:#ffe34d}
 
 /* bone icon needs contrast on white skill cards */
 .sk .ic.bone::before{background:#cfa45e;box-shadow:none}

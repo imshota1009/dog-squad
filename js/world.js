@@ -4,7 +4,82 @@
    ========================================================= */
 let scene,camera,renderer,sun;
 const camBase=V3(0,30,36);
+const camMenu=V3(0,20,28);
+const camMenuTarget=V3(0,2,0);
 let stageGroup=null,ownerRig=null,reticle,retDot;
+
+/* =========================================================
+   MENU SHOW — 6 dogs fly in dramatically
+   ========================================================= */
+let menuDogRigs=[];
+let menuShowT=0;
+
+const MENU_DOG_CONFIGS=[
+  {breed:"shiba",  land:V3(-5,0,3),  from:V3(-20,-8, 3), stagger:0.0},
+  {breed:"golden", land:V3(-3,0,5),  from:V3(-15,-12,5), stagger:0.3},
+  {breed:"dal",    land:V3( 0,0,6),  from:V3(  0,-15,6), stagger:0.6},
+  {breed:"corgi",  land:V3( 3,0,5),  from:V3( 15,-12,5), stagger:0.9},
+  {breed:"husky",  land:V3( 5,0,3),  from:V3( 20,-8, 3), stagger:1.2},
+  {breed:"pug",    land:V3( 0,0,2),  from:V3(  0,-20,0), stagger:1.5},
+];
+const FLY_DUR=0.8; // seconds to fly in
+const IDLE_PERIOD=2.0;
+
+function easeOutCubic(t){return 1-Math.pow(1-t,3);}
+function easeOutBounce(t){
+  if(t<1/2.75)return 7.5625*t*t;
+  if(t<2/2.75){t-=1.5/2.75;return 7.5625*t*t+0.75;}
+  if(t<2.5/2.75){t-=2.25/2.75;return 7.5625*t*t+0.9375;}
+  t-=2.625/2.75;return 7.5625*t*t+0.984375;
+}
+
+function startMenuShow(){
+  stopMenuShow();
+  menuShowT=0;
+  for(const cfg of MENU_DOG_CONFIGS){
+    const g=buildDog(cfg.breed);
+    g.position.copy(cfg.from);
+    scene.add(g);
+    menuDogRigs.push({g,cfg,landed:false});
+  }
+  // tilt camera for menu
+  if(camera){
+    camera.position.copy(camMenu);
+    camera.lookAt(camMenuTarget);
+  }
+}
+
+function stopMenuShow(){
+  for(const r of menuDogRigs)scene.remove(r.g);
+  menuDogRigs=[];
+}
+
+function updateMenuShow(t){
+  for(const rig of menuDogRigs){
+    const {g,cfg}=rig;
+    const localT=t-cfg.stagger;
+    if(localT<=0){g.position.copy(cfg.from);continue;}
+    if(localT<FLY_DUR){
+      const k=easeOutBounce(localT/FLY_DUR);
+      g.position.x=cfg.from.x+(cfg.land.x-cfg.from.x)*k;
+      g.position.z=cfg.from.z+(cfg.land.z-cfg.from.z)*k;
+      const arc=Math.sin((localT/FLY_DUR)*Math.PI)*5;
+      g.position.y=cfg.from.y+(cfg.land.y-cfg.from.y)*easeOutCubic(localT/FLY_DUR)+arc;
+      g.rotation.y=t*3+cfg.stagger;
+      rig.landed=false;
+    }else{
+      if(!rig.landed){rig.landed=true;g.position.copy(cfg.land);}
+      const idleT=(localT-FLY_DUR)%(IDLE_PERIOD);
+      const jumpPhase=idleT/IDLE_PERIOD;
+      const jumpY=jumpPhase<0.2?Math.sin(jumpPhase/0.2*Math.PI)*1.5:0;
+      g.position.set(cfg.land.x,cfg.land.y+jumpY,cfg.land.z);
+      g.rotation.y=Math.sin((localT-FLY_DUR)*0.9+cfg.stagger)*0.4;
+    }
+  }
+}
+window.startMenuShow=startMenuShow;
+window.stopMenuShow=stopMenuShow;
+window.updateMenuShow=updateMenuShow;
 
 function initWorld(){
   renderer=new THREE.WebGLRenderer({antialias:true});
@@ -211,8 +286,11 @@ function buildOwner(){
 /* =========================================================
    CHARACTERS
    ========================================================= */
-function buildDog(breedKey){
-  const opt=BREEDS[breedKey];
+function buildDog(breedKey, forceSkinId=null, forceCostumeId=null){
+  const base=BREEDS[breedKey];
+  const skinId=forceSkinId || (typeof SAVE!=="undefined"&&SAVE.equippedSkin&&SAVE.equippedSkin[breedKey]);
+  const skinData=skinId&&SKINS[breedKey]&&SKINS[breedKey].find(s=>s.id===skinId);
+  const opt=skinData?Object.assign({},base,{body:skinData.body,chest:skinData.chest,band:skinData.band}):base;
   const g=new THREE.Group();
   const body=box(1.35,1.05,2.05,opt.body);body.position.y=1.0;g.add(body);
   const chest=box(1.0,.62,.9,opt.chest);chest.position.set(0,.78,.72);g.add(chest);
@@ -249,6 +327,72 @@ function buildDog(breedKey){
       const sp=sph(rnd(.1,.18),0x222222,6);sp.scale.y=.4;
       sp.position.set(clamp(rnd(-.6,.6),-.68,.68),rnd(.7,1.4),rnd(-.9,.7));
       g.add(sp);
+    }
+  }
+  // Legendary costume parts
+  const costumeId = forceCostumeId !== null ? forceCostumeId :
+                    (typeof SAVE!=="undefined"&&SAVE.equippedCostume&&SAVE.equippedCostume[breedKey]);
+  if(costumeId){
+    const costume=costumeId;
+    if(costume==="flameCape"){
+      // Fire cape + fire crown
+      const cape=box(1.5,1.4,.08,0xff4500);cape.position.set(0,.8,-1.05);cape.rotation.x=.2;g.add(cape);
+      const capeInner=box(1.2,1.1,.06,0xffd700);capeInner.position.set(0,.85,-1.02);capeInner.rotation.x=.2;g.add(capeInner);
+      const crown=cyl(.35,.4,.22,0xffd700,8);crown.position.set(0,2.45,.85);g.add(crown);
+      for(let i=0;i<5;i++){const a=i/5*Math.PI*2;
+        const spike=cone(.06,.25,0xff4500,4);spike.position.set(Math.cos(a)*.32,2.65,.85+Math.sin(a)*.32);g.add(spike);}
+    }
+    if(costume==="angelWings"){
+      // Wings + halo
+      [-1,1].forEach(s=>{
+        const wing=new THREE.Group();
+        for(let i=0;i<4;i++){
+          const feather=box(.15+i*.08,.06,.7-i*.12,0xffffff);
+          feather.position.set(s*(.6+i*.2),1.2+i*.15,-.4-i*.15);
+          feather.rotation.z=s*(-.15-i*.08);feather.rotation.x=.1;
+          wing.add(feather);
+        }
+        g.add(wing);
+      });
+      const haloGeo=new THREE.TorusGeometry(.35,.04,8,20);
+      const halo=new THREE.Mesh(haloGeo,new THREE.MeshBasicMaterial({color:0xffd700}));
+      halo.rotation.x=Math.PI/2;halo.position.set(0,2.65,.85);g.add(halo);
+    }
+    if(costume==="phantomCloak"){
+      // Dark flowing cloak + mask
+      const cloak=box(1.8,1.8,.08,0x1a0033);cloak.position.set(0,.9,-1.1);cloak.rotation.x=.15;g.add(cloak);
+      const cloakEdge=box(1.6,.12,.1,0xcc00ff);cloakEdge.position.set(0,.08,-1.08);g.add(cloakEdge);
+      const mask=box(.9,.5,.06,0x220044);mask.position.set(0,1.95,1.35);g.add(mask);
+      [-1,1].forEach(s=>{const eye=sph(.08,0xff00ff,6);eye.position.set(.2*s,1.97,1.39);g.add(eye);});
+    }
+    if(costume==="thunderHorns"){
+      // Lightning horns + crackling band
+      [-1,1].forEach(s=>{
+        const horn=cone(.1,.55,0xffff00,5);horn.position.set(.35*s,2.55,.75);horn.rotation.z=-.3*s;g.add(horn);
+        const hornTip=sph(.06,0xffffff,6);hornTip.position.set(.42*s,2.85,.72);g.add(hornTip);
+      });
+      const boltBand=cyl(.7,.85,.18,0xffff00,10);boltBand.position.set(0,1.42,.8);
+      boltBand.material=new THREE.MeshBasicMaterial({color:0xffff00,transparent:true,opacity:.6});g.add(boltBand);
+    }
+    if(costume==="iceCrown"){
+      // Ice crystal crown + ice shards
+      const crown=cyl(.38,.42,.2,0x88ddff,6);crown.position.set(0,2.45,.85);
+      crown.material=new THREE.MeshBasicMaterial({color:0x88ddff,transparent:true,opacity:.7});g.add(crown);
+      for(let i=0;i<6;i++){const a=i/6*Math.PI*2;
+        const crystal=cone(.07,.35,0xaaeeff,4);crystal.position.set(Math.cos(a)*.34,2.7,.85+Math.sin(a)*.34);
+        crystal.material=new THREE.MeshBasicMaterial({color:0xaaeeff,transparent:true,opacity:.8});g.add(crystal);}
+      [-1,1].forEach(s=>{const shard=cone(.12,.4,0xccf0ff,4);shard.position.set(.7*s,1.0,-.6);shard.rotation.z=.4*s;
+        shard.material=new THREE.MeshBasicMaterial({color:0xccf0ff,transparent:true,opacity:.6});g.add(shard);});
+    }
+    if(costume==="emperorCrown"){
+      // Golden emperor cape + crown with jewels
+      const cape=box(1.6,1.5,.08,0x8b0000);cape.position.set(0,.85,-1.08);cape.rotation.x=.18;g.add(cape);
+      const capeGold=box(1.4,.15,.09,0xffd700);capeGold.position.set(0,1.55,-1.05);g.add(capeGold);
+      const crown=cyl(.36,.42,.25,0xffd700,8);crown.position.set(0,2.48,.85);g.add(crown);
+      for(let i=0;i<4;i++){const a=i/4*Math.PI*2;
+        const gem=sph(.07,[0xe74c3c,0x2ecc71,0x3498db,0x9b59b6][i],6);
+        gem.position.set(Math.cos(a)*.34,2.55,.85+Math.sin(a)*.34);g.add(gem);}
+      const topGem=sph(.1,0xe74c3c,8);topGem.position.set(0,2.78,.85);g.add(topGem);
     }
   }
   if(opt.short){ // corgi: lower the whole body
@@ -332,6 +476,158 @@ function makeAcornMesh(s=1){
   const st=cyl(s*.16,s*.16,s*.5,0x5d3d20,5);st.position.y=s*1.05;g.add(st);
   return g;
 }
+/* =========================================================
+   SKIN PREVIEW — separate renderer/scene/camera
+   ========================================================= */
+let _skinPrevRenderer=null, _skinPrevScene=null, _skinPrevCamera=null;
+let _skinPrevDog=null, _skinPrevRAF=null, _skinPrevBreed=null;
+let _prevParticles = [];
+
+function prevBurst(pos, color, isStar=false){
+  if(!_skinPrevScene) return;
+  const geo = isStar ? new THREE.OctahedronGeometry(.14) : new THREE.BoxGeometry(.1, .1, .1);
+  const mat = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 0.9});
+  const m = new THREE.Mesh(geo, mat);
+  m.position.copy(pos);
+  _skinPrevScene.add(m);
+  
+  const spd = 1.2;
+  const vx = (Math.random() - 0.5) * spd;
+  const vy = Math.random() * 1.6 + 0.6;
+  const vz = (Math.random() - 0.5) * spd;
+  
+  _prevParticles.push({
+    m: m,
+    v: new THREE.Vector3(vx, vy, vz),
+    life: 0.55,
+    maxLife: 0.55
+  });
+}
+
+function initSkinPreview(){
+  const canvas=document.getElementById("skinPreviewCanvas");
+  if(!canvas||_skinPrevRenderer)return;
+  _skinPrevRenderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  _skinPrevRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  _skinPrevRenderer.setClearColor(0x000000,0);
+  _skinPrevScene=new THREE.Scene();
+  const w=canvas.offsetWidth||200, h=canvas.offsetHeight||240;
+  _skinPrevRenderer.setSize(w,h);
+  _skinPrevCamera=new THREE.PerspectiveCamera(42,w/h,0.1,100);
+  _skinPrevCamera.position.set(0,2.8,7);
+  _skinPrevCamera.lookAt(0,1.6,0);
+  _skinPrevScene.add(new THREE.HemisphereLight(0xeaf6ff,0x3a6a3a,1.3));
+  const dl=new THREE.DirectionalLight(0xffffff,0.9);
+  dl.position.set(4,8,4);
+  _skinPrevScene.add(dl);
+  const rl=new THREE.DirectionalLight(0x8888ff,0.3);
+  rl.position.set(-4,2,-2);
+  _skinPrevScene.add(rl);
+  // circular ground
+  const ground=new THREE.Mesh(new THREE.CircleGeometry(2.5,40),new THREE.MeshLambertMaterial({color:0x2a3d2a}));
+  ground.rotation.x=-Math.PI/2; ground.position.y=-0.01;
+  _skinPrevScene.add(ground);
+  
+  let lastTime = Date.now();
+  let partTimer = 0;
+  
+  function prevLoop(){
+    _skinPrevRAF=requestAnimationFrame(prevLoop);
+    const now = Date.now();
+    const dt = Math.min(0.1, (now - lastTime) / 1000);
+    lastTime = now;
+    
+    if(_skinPrevDog){
+      // If we are previewing effects tab, animate dog running and spawn walking particles
+      if (typeof _shopTab !== "undefined" && _shopTab === "effects") {
+        _skinPrevDog.rotation.y += 0.007; // Rotate dog slowly to show off trail
+        _skinPrevDog.position.y = Math.abs(Math.sin(now * 0.012)) * 0.22;
+        
+        partTimer -= dt;
+        if (partTimer <= 0) {
+          partTimer = 0.07;
+          const eff = typeof _prevEffect !== "undefined" ? _prevEffect : null;
+          if (eff) {
+            const pos = _skinPrevDog.position.clone().add(new THREE.Vector3(
+              (Math.random() - 0.5) * 0.4,
+              0.1,
+              (Math.random() - 0.5) * 0.4
+            ));
+            if(eff==="fire") prevBurst(pos, 0xff4500, false);
+            else if(eff==="holy") prevBurst(pos, 0xffd700, true);
+            else if(eff==="shadow") prevBurst(pos, 0x6600cc, false);
+            else if(eff==="lightning") prevBurst(pos, 0xffff00, true);
+            else if(eff==="frost") prevBurst(pos, 0x88ddff, true);
+            else if(eff==="golden") prevBurst(pos, 0xffd700, true);
+          }
+        }
+      } else {
+        _skinPrevDog.rotation.y += 0.018;
+        _skinPrevDog.position.y = 0;
+      }
+    }
+    
+    // Update preview particles
+    for (let i = _prevParticles.length - 1; i >= 0; i--) {
+      const p = _prevParticles[i];
+      p.life -= dt;
+      if (p.life <= 0) {
+        _skinPrevScene.remove(p.m);
+        p.m.geometry.dispose();
+        p.m.material.dispose();
+        _prevParticles.splice(i, 1);
+      } else {
+        p.m.position.addScaledVector(p.v, dt);
+        p.v.y -= 1.8 * dt; // gravity
+        p.m.material.opacity = p.life / p.maxLife;
+      }
+    }
+    
+    if (_skinPrevRenderer && _skinPrevScene && _skinPrevCamera) {
+      _skinPrevRenderer.render(_skinPrevScene,_skinPrevCamera);
+    }
+  }
+  prevLoop();
+}
+
+function setSkinPreviewDog(breedKey, skinId, costumeId, effectId){
+  if(!_skinPrevScene)initSkinPreview();
+  if(!_skinPrevScene)return;
+  if(_skinPrevDog){_skinPrevScene.remove(_skinPrevDog);_skinPrevDog=null;}
+  
+  const dog=buildDog(breedKey, skinId, costumeId);
+  dog.position.set(0,0,0);
+  dog.scale.setScalar(1.4);
+  _skinPrevDog=dog;
+  _skinPrevScene.add(dog);
+}
+
+function destroySkinPreview(){
+  if(_skinPrevRAF){cancelAnimationFrame(_skinPrevRAF);_skinPrevRAF=null;}
+  if(_skinPrevDog){if(_skinPrevScene)_skinPrevScene.remove(_skinPrevDog);_skinPrevDog=null;}
+  
+  // Clear preview particles
+  if(_skinPrevScene && _prevParticles){
+    _prevParticles.forEach(p => {
+      _skinPrevScene.remove(p.m);
+      p.m.geometry.dispose();
+      p.m.material.dispose();
+    });
+  }
+  _prevParticles = [];
+  
+  if(_skinPrevRenderer){
+    _skinPrevRenderer.dispose();
+    _skinPrevRenderer=null;
+  }
+  _skinPrevScene=null;
+  _skinPrevCamera=null;
+}
+
+window.initSkinPreview=initSkinPreview;
+window.setSkinPreviewDog=setSkinPreviewDog;
+window.destroySkinPreview=destroySkinPreview;
+
 function buildItemMesh(type){
   const it=ITEMS[type];
   const g=new THREE.Group();

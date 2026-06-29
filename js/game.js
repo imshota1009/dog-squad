@@ -5,8 +5,16 @@
 
 /* ---------- persistent save ---------- */
 let SAVE=(()=>{
-  try{const s=JSON.parse(localStorage.getItem("dsq_save"));if(s&&s.up)return s;}catch(e){}
-  return {coins:0,up:{},bestScore:0,wins:0};
+  try{const s=JSON.parse(localStorage.getItem("dsq_save"));if(s&&s.up){
+    if(!s.ownedSkins)s.ownedSkins=[];
+    if(!s.equippedSkin)s.equippedSkin={};
+    if(!s.ownedCostumes)s.ownedCostumes=[];
+    if(!s.equippedCostume)s.equippedCostume={};
+    if(!s.ownedEffects)s.ownedEffects=[];
+    if(!s.equippedEffect)s.equippedEffect={};
+    return s;
+  }}catch(e){}
+  return {coins:0,up:{},bestScore:0,wins:0,ownedSkins:[],equippedSkin:{},ownedCostumes:[],equippedCostume:{},ownedEffects:[],equippedEffect:{}};
 })();
 function persist(){try{localStorage.setItem("dsq_save",JSON.stringify(SAVE));}catch(e){}}
 
@@ -851,11 +859,30 @@ function updateAllies(dt){
 function updateRemotes(dt){
   for(const pid in remotes){
     const r=remotes[pid];
+    const prevPos=r.g.position.clone();
     r.g.position.x+=(r.tx-r.g.position.x)*Math.min(1,12*dt);
     r.g.position.z+=(r.tz-r.g.position.z)*Math.min(1,12*dt);
     r.g.position.y+=(r.fy-r.g.position.y)*Math.min(1,12*dt);
     r.g.rotation.y+=(r.ry-r.g.rotation.y)*Math.min(1,12*dt);
     r.g.userData.tail.rotation.z=.4*Math.sin(game.time*10);
+    
+    // Remote skin effects (when moving)
+    const isMoving = prevPos.distanceTo(r.g.position) > 0.01;
+    if(r.effect && isMoving){
+      r.effectT = (r.effectT || 0) - dt;
+      if(r.effectT <= 0){
+        r.effectT = r.effect === "legendary" ? .06 : .14;
+        const eff = r.effectType || "sparkle";
+        const pos = r.g.position.clone().add(V3(rnd(-.5,.5),.2,rnd(-.5,.5)));
+        if(eff==="fire")burst(pos,0xff4500,4,1.8,false,3);
+        else if(eff==="holy")burst(pos,0xffd700,3,1.4,true,4);
+        else if(eff==="shadow")burst(pos,0x6600cc,4,1.2,false,2);
+        else if(eff==="lightning")burst(pos,0xffff00,3,2.2,true,4);
+        else if(eff==="frost")burst(pos,0x88ddff,3,1.4,true,3);
+        else if(eff==="golden")burst(pos,0xffd700,4,1.8,true,3.5);
+        else burst(pos,0xffe34d,3,1.2,true,2.5);
+      }
+    }
   }
 }
 function updatePlayer(dt){
@@ -894,6 +921,22 @@ function updatePlayer(dt){
     if(game.pinT<=0){
       game.pinT=.08;
       Net.game({t:"pin",p:[player.pos.x,player.pos.z],ry:player.g.rotation.y,fy:player.g.position.y});
+    }
+  }
+  // skin effects (rare=paw prints, epic=sparkles, legendary=aura+particles)
+  if(player._skinEffect && (keys["KeyW"]||keys["KeyS"]||keys["KeyA"]||keys["KeyD"]||keys["ArrowUp"]||keys["ArrowDown"]||keys["ArrowLeft"]||keys["ArrowRight"])){
+    player._effectT=(player._effectT||0)-dt;
+    if(player._effectT<=0){
+      player._effectT=player._skinEffect==="legendary"?.06:.14;
+      const eff=player._skinEffectType||"sparkle";
+      const pos=player.pos.clone().add(V3(rnd(-.5,.5),.2,rnd(-.5,.5)));
+      if(eff==="fire")burst(pos,0xff4500,4,1.8,false,3);
+      else if(eff==="holy")burst(pos,0xffd700,3,1.4,true,4);
+      else if(eff==="shadow")burst(pos,0x6600cc,4,1.2,false,2);
+      else if(eff==="lightning")burst(pos,0xffff00,3,2.2,true,4);
+      else if(eff==="frost")burst(pos,0x88ddff,3,1.4,true,3);
+      else if(eff==="golden")burst(pos,0xffd700,4,1.8,true,3.5);
+      else burst(pos,0xffe34d,3,1.2,true,2.5);
     }
   }
 }
@@ -948,6 +991,7 @@ function updateFX(dt,rawDt){
   }
 }
 function updateCamera(rawDt){
+  if(game.state==="menu")return; // menu camera handled by startMenuShow
   game.shake=Math.max(0,game.shake-rawDt*1.6);
   const px=player?player.pos.x:0,pz=player?player.pos.z:0;
   const sx=(Math.random()-.5)*game.shake*1.6;
@@ -1052,6 +1096,7 @@ function renderPicker(elId,type,order,onPick){
 function renderMenu(){
   $("#menuCoins").textContent=SAVE.coins;
   $("#menuBest").textContent=SAVE.bestScore;
+  if(typeof startMenuShow==="function")startMenuShow();
 }
 const TALKS_JA=[
   "おかえり！コインで きたえてあげよう。バトル中も ぼくがアイテムを投げ入れるからね！",
@@ -1067,11 +1112,25 @@ const TALKS_EN=[
   "Stock up on trap bags and become a pit trap master!",
   "Once you're strong enough, take on the snowy mountain on Hard!"
 ];
+let _shopTab="upgrades";
+let _skinBreedSel = BREEDORDER[0];
+let _prevSkin = null;
+let _prevCostume = null;
+let _prevEffect = null;
+
 function renderShop(){
   $("#shopCoins").textContent=SAVE.coins;
   const talks=curLang==="en"?TALKS_EN:TALKS_JA;
   $("#ownerTalk").textContent=talks[rndi(0,talks.length-1)];
+  // tab switching
+  document.querySelectorAll(".shopTab").forEach(t=>t.classList.toggle("active",t.dataset.tab===_shopTab));
+  if(_shopTab==="skins"||_shopTab==="costumes"||_shopTab==="effects"){renderSkinShop();return;}
+  const skinLayout2=$("#skinShopLayout");if(skinLayout2)skinLayout2.style.display="none";
+  const shopGrid2=document.querySelector(".shopGrid");if(shopGrid2)shopGrid2.style.display="";
+  const upEl2=$("#upList");if(upEl2)upEl2.style.display="";
   const el=$("#upList");el.innerHTML="";
+  el.style.display="";
+  const skinEl=$("#skinList");if(skinEl)skinEl.style.display="none";
   UPORDER.forEach(k=>{
     const u=UPS[k],lv=upLv(k),cost=upCost(k,lv),maxed=lv>=u.max;
     const row=document.createElement("div");row.className="upRow";
@@ -1088,6 +1147,285 @@ function renderShop(){
     };
     el.appendChild(row);
   });
+}
+function getSaleCountdown(){
+  const now=new Date();
+  const day=now.getUTCDay(); // 0=Sun,1=Mon...
+  const daysUntilMon=(day===0)?1:(8-day);
+  const nextMon=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+daysUntilMon));
+  const ms=nextMon-now;
+  const d=Math.floor(ms/(86400000));
+  const h=Math.floor((ms%86400000)/3600000);
+  return `${d}日 ${h}時間`;
+}
+function rarityLabel(r){
+  if(r==="legendary")return curLang==="en"?"LEGENDARY":"レジェンダリー";
+  if(r==="epic")return curLang==="en"?"EPIC":"エピック";
+  if(r==="rare")return curLang==="en"?"RARE":"レア";
+  return curLang==="en"?"COMMON":"コモン";
+}
+function showSkinPreview(skin,saleMap){
+  let overlay=$("#skinPreviewOverlay");
+  if(!overlay){
+    overlay=document.createElement("div");overlay.id="skinPreviewOverlay";
+    overlay.className="skinPreviewOverlay";
+    document.body.appendChild(overlay);
+  }
+  const sale=saleMap[skin.id];
+  const finalCost=sale?Math.floor(skin.cost*sale):skin.cost;
+  const bodyHex="#"+skin.body.toString(16).padStart(6,"0");
+  const chestHex="#"+skin.chest.toString(16).padStart(6,"0");
+  const bandHex="#"+skin.band.toString(16).padStart(6,"0");
+  const label=curLang==="en"?skin.label_en:skin.label;
+  const rarityBadgeClass="rarityBadge rarity-"+skin.rarity;
+  overlay.innerHTML=`
+    <div class="skinPreviewBox">
+      <button class="skinPreviewClose" id="skinPreviewClose">✕</button>
+      ${sale?`<div class="saleBigBadge">SALE -40%</div>`:""}
+      <div class="skinPreviewSwatches">
+        <div class="skinPreviewBody" style="background:${bodyHex}"></div>
+        <div class="skinPreviewChest" style="background:${chestHex}"></div>
+        <div class="skinPreviewBand" style="background:${bandHex}"></div>
+      </div>
+      <div class="skinPreviewName">${label}</div>
+      <div class="${rarityBadgeClass}">${rarityLabel(skin.rarity)}</div>
+      <div class="skinPreviewPrice">
+        ${sale?`<span class="skinPriceOld">${skin.cost}</span> `:""}
+        <span class="skinPriceFinal">${finalCost} ${curLang==="en"?"Coins":"コイン"}</span>
+      </div>
+    </div>`;
+  overlay.style.display="flex";
+  overlay.onclick=(e)=>{if(e.target===overlay||e.target.id==="skinPreviewClose")overlay.style.display="none";};
+}
+function renderSkinShop(){
+  // hide/show correct panels
+  const upEl=$("#upList"); if(upEl)upEl.style.display="none";
+  const shopGrid=document.querySelector(".shopGrid"); if(shopGrid)shopGrid.style.display="none";
+  const skinLayout=$("#skinShopLayout"); if(skinLayout)skinLayout.style.display="";
+
+  // init 3D preview
+  if(typeof initSkinPreview==="function")initSkinPreview();
+
+  const saleMap=getSaleMap();
+
+  // sale countdown bar (only relevant for skins tab)
+  const saleBar=$("#skinSaleBar");
+  if(saleBar){
+    if(_shopTab==="skins"){
+      const countdown=getSaleCountdown();
+      saleBar.innerHTML=`<span class="saleTimerIcon">SALE</span>今週のセール終了まで <b>${countdown}</b>`;
+      saleBar.style.display="";
+    }else{
+      saleBar.style.display="none";
+    }
+  }
+
+  // breed tabs
+  const breedTabs=$("#skinBreedTabs");
+  if(breedTabs){
+    breedTabs.innerHTML="";
+    BREEDORDER.forEach(bk=>{
+      const breed=BREEDS[bk];
+      const label=curLang==="en"?breed.label_en:breed.label;
+      const shortLabel=label.slice(0,3);
+      
+      const equipped = _shopTab === "skins" ? SAVE.equippedSkin[bk] :
+                       _shopTab === "costumes" ? SAVE.equippedCostume[bk] :
+                       SAVE.equippedEffect[bk];
+                       
+      const btn=document.createElement("button");
+      btn.className="skinBreedTab"+(bk===_skinBreedSel?" active":"");
+      btn.innerHTML=`${shortLabel}${equipped?'<span class="skinBreedEquippedDot"></span>':""}`;
+      btn.onclick=()=>{
+        _skinBreedSel=bk;
+        _prevSkin = null; _prevCostume = null; _prevEffect = null;
+        renderSkinShop();
+      };
+      breedTabs.appendChild(btn);
+    });
+  }
+
+  // load preview defaults if null
+  if (_prevSkin === null) _prevSkin = SAVE.equippedSkin[_skinBreedSel] || null;
+  if (_prevCostume === null) _prevCostume = SAVE.equippedCostume[_skinBreedSel] || null;
+  if (_prevEffect === null) _prevEffect = SAVE.equippedEffect[_skinBreedSel] || null;
+
+  // skin/costume/effect cards for selected tab
+  const cardList=$("#skinCardList");
+  if(cardList){
+    cardList.innerHTML="";
+    const items = _shopTab === "skins" ? (SKINS[_skinBreedSel]||[]) :
+                  _shopTab === "costumes" ? COSTUMES : EFFECTS;
+                  
+    items.forEach(item=>{
+      const owned = _shopTab === "skins" ? SAVE.ownedSkins.includes(item.id) :
+                    _shopTab === "costumes" ? SAVE.ownedCostumes.includes(item.id) :
+                    SAVE.ownedEffects.includes(item.id);
+                    
+      const equipped = _shopTab === "skins" ? SAVE.equippedSkin[_skinBreedSel]===item.id :
+                       _shopTab === "costumes" ? SAVE.equippedCostume[_skinBreedSel]===item.id :
+                       SAVE.equippedEffect[_skinBreedSel]===item.id;
+                       
+      const sale = _shopTab === "skins" ? saleMap[item.id] : undefined;
+      const finalCost = sale ? Math.floor(item.cost*sale) : item.cost;
+      const canBuy = !owned && SAVE.coins>=finalCost;
+      const label = curLang==="en"?item.label_en:item.label;
+      const rarityKey = item.rarity||"common";
+
+      const card = document.createElement("div");
+      // highlight if previewing this item
+      const isCurrentlyPreviewed = _shopTab === "skins" ? (_prevSkin === item.id) :
+                                   _shopTab === "costumes" ? (_prevCostume === item.id) :
+                                   (_prevEffect === item.id);
+      card.className = "skinCard2" + (equipped?" equipped2":"") + (isCurrentlyPreviewed?" previewing":"");
+
+      let swatchHTML = "";
+      if(_shopTab==="skins"){
+        const bodyHex="#"+item.body.toString(16).padStart(6,"0");
+        const chestHex="#"+item.chest.toString(16).padStart(6,"0");
+        const bandHex="#"+item.band.toString(16).padStart(6,"0");
+        swatchHTML = `<div class="skinSwatch2">`+
+          `<div class="skinSwBody" style="background:${bodyHex}"></div>`+
+          `<div class="skinSwChest" style="background:${chestHex}"></div>`+
+          `<div class="skinSwBand" style="background:${bandHex}"></div>`+
+          `</div>`;
+      }else if(_shopTab==="costumes"){
+        swatchHTML = `<div class="skinSwatch2" style="background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-size:18px">👑</div>`;
+      }else{
+        swatchHTML = `<div class="skinSwatch2" style="background:#1a2e1a;display:flex;align-items:center;justify-content:center;font-size:18px">⚡</div>`;
+      }
+
+      card.innerHTML=
+        swatchHTML +
+        `<div class="skinCard2Info">`+
+        `<div class="skinCard2Name">${label}</div>`+
+        `<div class="skinCard2Rarity rarity-${rarityKey}">${rarityLabel(rarityKey)}</div>`+
+        `</div>`+
+        (sale?`<div class="saleTag">-40%</div>`:"")+
+        `<button class="skinCard2Btn ${equipped?"sk-equipped":owned?"sk-owned":canBuy?"sk-buy":"sk-locked"}">`+
+        (equipped?(curLang==="en"?"ON":"装備中"):
+         owned?(curLang==="en"?"Equip":"装備"):
+         canBuy?(sale?`<s>${item.cost}</s> ${finalCost}`:finalCost)+(curLang==="en"?" C":" C"):
+         `${finalCost}C 🔒`)+
+        `</button>`;
+
+      // clicking card previews this item
+      card.addEventListener("click",(e)=>{
+        if(e.target.closest(".skinCard2Btn"))return;
+        if(_shopTab==="skins") _prevSkin = item.id;
+        else if(_shopTab==="costumes") _prevCostume = item.id;
+        else _prevEffect = item.id;
+        
+        if(typeof setSkinPreviewDog==="function"){
+          setSkinPreviewDog(_skinBreedSel, _prevSkin, _prevCostume, _prevEffect);
+        }
+        updateSkinPreviewInfo(item, saleMap, _skinBreedSel, owned, equipped, finalCost, sale);
+        
+        document.querySelectorAll(".skinCard2").forEach(c=>c.classList.remove("previewing"));
+        card.classList.add("previewing");
+      });
+
+      const btn=card.querySelector(".skinCard2Btn");
+      if(equipped){
+        btn.onclick=(e)=>{
+          e.stopPropagation();
+          if(_shopTab==="skins") delete SAVE.equippedSkin[_skinBreedSel];
+          else if(_shopTab==="costumes") delete SAVE.equippedCostume[_skinBreedSel];
+          else delete SAVE.equippedEffect[_skinBreedSel];
+          
+          persist();
+          sfx.click();
+          
+          // reset preview state
+          if(_shopTab==="skins") _prevSkin = null;
+          else if(_shopTab==="costumes") _prevCostume = null;
+          else _prevEffect = null;
+          
+          renderSkinShop();
+        };
+      } else if(owned){
+        btn.onclick=(e)=>{
+          e.stopPropagation();
+          if(_shopTab==="skins") {
+            SAVE.equippedSkin[_skinBreedSel]=item.id;
+            _prevSkin = item.id;
+          } else if(_shopTab==="costumes") {
+            SAVE.equippedCostume[_skinBreedSel]=item.id;
+            _prevCostume = item.id;
+          } else {
+            SAVE.equippedEffect[_skinBreedSel]=item.id;
+            _prevEffect = item.id;
+          }
+          persist();
+          sfx.buy();
+          renderSkinShop();
+        };
+      } else if(canBuy){
+        btn.onclick=(e)=>{
+          e.stopPropagation();
+          SAVE.coins-=finalCost;
+          if(_shopTab==="skins") SAVE.ownedSkins.push(item.id);
+          else if(_shopTab==="costumes") SAVE.ownedCostumes.push(item.id);
+          else SAVE.ownedEffects.push(item.id);
+          persist();
+          sfx.buy();
+          $("#shopCoins").textContent=SAVE.coins;
+          renderSkinShop();
+        };
+      } else {
+        btn.disabled=true;
+      }
+      cardList.appendChild(card);
+    });
+  }
+
+  // 3D preview default rendering
+  if(typeof setSkinPreviewDog==="function"){
+    setSkinPreviewDog(_skinBreedSel, _prevSkin, _prevCostume, _prevEffect);
+    
+    // Find current previewed item info to show on the right panel
+    const curPreviewId = _shopTab === "skins" ? _prevSkin :
+                         _shopTab === "costumes" ? _prevCostume : _prevEffect;
+    const items = _shopTab === "skins" ? (SKINS[_skinBreedSel]||[]) :
+                  _shopTab === "costumes" ? COSTUMES : EFFECTS;
+                  
+    let previewItem = items.find(it => it.id === curPreviewId) || items[0];
+    
+    if(previewItem){
+      const sale = _shopTab === "skins" ? saleMap[previewItem.id] : undefined;
+      const finalCost = sale ? Math.floor(previewItem.cost*sale) : previewItem.cost;
+      const owned = _shopTab === "skins" ? SAVE.ownedSkins.includes(previewItem.id) :
+                    _shopTab === "costumes" ? SAVE.ownedCostumes.includes(previewItem.id) :
+                    SAVE.ownedEffects.includes(previewItem.id);
+      const equipped = _shopTab === "skins" ? SAVE.equippedSkin[_skinBreedSel]===previewItem.id :
+                       _shopTab === "costumes" ? SAVE.equippedCostume[_skinBreedSel]===previewItem.id :
+                       SAVE.equippedEffect[_skinBreedSel]===previewItem.id;
+      updateSkinPreviewInfo(previewItem, saleMap, _skinBreedSel, owned, equipped, finalCost, sale);
+    }
+  }
+}
+
+function updateSkinPreviewInfo(item, saleMap, breedKey, owned, equipped, finalCost, sale){
+  const el=$("#skinPreviewInfo");
+  if(!el)return;
+  const label=curLang==="en"?item.label_en:item.label;
+  const breed=BREEDS[breedKey];
+  const breedLabel=curLang==="en"?breed.label_en:breed.label;
+  
+  // Show description if available (for costumes/effects)
+  const desc = item.desc ? (curLang === "en" ? item.desc_en : item.desc) : "";
+  const descHTML = desc ? `<div class="prevInfoDesc" style="font-size:12px;opacity:0.8;margin-top:6px;line-height:1.4">${desc}</div>` : "";
+  
+  el.innerHTML=
+    `<div class="prevInfoBreed">${breedLabel}</div>`+
+    `<div class="prevInfoName">${label}</div>`+
+    `<div class="prevInfoRarity rarity-${item.rarity}">${rarityLabel(item.rarity)}</div>`+
+    (sale?`<div class="prevInfoSale">SALE -40%</div>`:"")+
+    descHTML+
+    `<div class="prevInfoPrice">`+
+    (sale?`<span class="prevOldPrice">${item.cost}</span> `:"")+
+    `<span class="prevFinalPrice">${finalCost} ${curLang==="en"?"Coins":"コイン"}</span>`+
+    `</div>`;
 }
 /* ---------- lobby ---------- */
 function lobbyInit(){
@@ -1109,18 +1447,29 @@ async function lobbyConnect(action){
     return;
   }
   $("#lobbyErr").textContent="";
-  if(action==="create")Net.send({t:"create",name});
+  if(action==="create") {
+    const skin = (SAVE.equippedSkin && SAVE.equippedSkin["shiba"]) || null;
+    const costume = (SAVE.equippedCostume && SAVE.equippedCostume["shiba"]) || null;
+    const effect = (SAVE.equippedEffect && SAVE.equippedEffect["shiba"]) || null;
+    Net.send({t:"create",name,skin,costume,effect});
+  }
   else{
     const code=$("#inCode").value.trim().toUpperCase();
     if(code.length!==4){$("#lobbyErr").textContent="4文字の あいことばを入れてね";return;}
-    Net.send({t:"join",code,name});
+    const skin = (SAVE.equippedSkin && SAVE.equippedSkin["shiba"]) || null;
+    const costume = (SAVE.equippedCostume && SAVE.equippedCostume["shiba"]) || null;
+    const effect = (SAVE.equippedEffect && SAVE.equippedEffect["shiba"]) || null;
+    Net.send({t:"join",code,name,skin,costume,effect});
   }
 }
 function enterRoom(){
   $("#lobbyConnect").classList.add("hidden");
   $("#lobbyRoom").classList.remove("hidden");
   $("#roomErr").textContent="";
-  Net.send({t:"breed",breed:sel.breed});
+  const skin = (SAVE.equippedSkin && SAVE.equippedSkin[sel.breed]) || null;
+  const costume = (SAVE.equippedCostume && SAVE.equippedCostume[sel.breed]) || null;
+  const effect = (SAVE.equippedEffect && SAVE.equippedEffect[sel.breed]) || null;
+  Net.send({t:"breed",breed:sel.breed,skin,costume,effect});
   renderRoom();
 }
 function renderRoom(){
@@ -1140,9 +1489,13 @@ function renderRoom(){
     }
     slots.appendChild(div);
   }
-  renderPicker("#breedRowL","breed",BREEDORDER,()=>Net.send({t:"breed",breed:sel.breed}));
+  renderPicker("#breedRowL","breed",BREEDORDER,()=>{
+    const skin = (SAVE.equippedSkin && SAVE.equippedSkin[sel.breed]) || null;
+    const costume = (SAVE.equippedCostume && SAVE.equippedCostume[sel.breed]) || null;
+    const effect = (SAVE.equippedEffect && SAVE.equippedEffect[sel.breed]) || null;
+    Net.send({t:"breed",breed:sel.breed,skin,costume,effect});
+  });
   if(Net.host){
-    $("#hostCfg").classList.remove("hidden");
     $("#btnStart").classList.remove("hidden");
     $("#waitHost").classList.add("hidden");
     renderPicker("#stageRowL","stage",STAGEORDER,()=>Net.send({t:"cfg",stage:sel.stage,diff:sel.diff}));
@@ -1193,6 +1546,9 @@ function beginGame(cfg){
     alert(T("webglError"));
     return;
   }
+  if(typeof stopMenuShow==="function")stopMenuShow();
+  // restore camera to game position
+  if(camera){camera.position.copy(camBase);camera.lookAt(0,0,0);}
   applyLang();
   cleanup();
   game.mode=cfg.mode;game.stage=cfg.stage;game.diff=cfg.diff;
@@ -1213,8 +1569,28 @@ function beginGame(cfg){
   const a0=idx/6*Math.PI*2;
   const px=cfg.mode==="solo"?0:Math.cos(a0)*6;
   const pz=cfg.mode==="solo"?6:Math.sin(a0)*6;
-  player={breed:cfg.breed,g:buildDog(cfg.breed),pos:V3(px,0,pz),aim:V3(0,0,14),
+  const _eqCostumeId = SAVE.equippedCostume && SAVE.equippedCostume[cfg.breed] || null;
+  player={breed:cfg.breed,g:buildDog(cfg.breed, null, _eqCostumeId),pos:V3(px,0,pz),aim:V3(0,0,14),
     fireCd:0,barkCd:0,knockT:0,knockV:V3(),stats:calcStats(cfg.breed),trapStock:0};
+  // Setup skin effect data for player
+  const _eqSkinId=SAVE.equippedSkin&&SAVE.equippedSkin[cfg.breed];
+  const _eqSkinData=_eqSkinId&&SKINS[cfg.breed]&&SKINS[cfg.breed].find(s=>s.id===_eqSkinId);
+  const _eqEffectId = SAVE.equippedEffect && SAVE.equippedEffect[cfg.breed];
+  const _eqEffectData = _eqEffectId && EFFECTS.find(e => e.id === _eqEffectId);
+  
+  if(_eqEffectData){
+    player._skinEffect = _eqEffectData.rarity;
+    player._skinEffectType = _eqEffectData.effect || "sparkle";
+  }else if(_eqSkinData&&_eqSkinData.rarity==="legendary"){
+    player._skinEffect="legendary";
+    player._skinEffectType="sparkle";
+  }else if(_eqSkinData&&_eqSkinData.rarity==="epic"){
+    player._skinEffect="epic";
+    player._skinEffectType="sparkle";
+  }else if(_eqSkinData&&_eqSkinData.rarity==="rare"){
+    player._skinEffect="rare";
+    player._skinEffectType="paw";
+  }
   player.trapStock=player.stats.traps;
   player.g.position.copy(player.pos);scene.add(player.g);
   
@@ -1240,10 +1616,29 @@ function beginGame(cfg){
     players.forEach((p,i)=>{
       if(p.id===myId())return;
       const a=i/6*Math.PI*2;
-      const g=buildDog(p.breed||"shiba");
+      const g=buildDog(p.breed||"shiba", p.skin || null, p.costume || null);
       g.position.set(Math.cos(a)*6,0,Math.sin(a)*6);
       scene.add(g);
-      remotes[p.id]={g,breed:p.breed,tx:g.position.x,tz:g.position.z,ry:0,fy:0};
+      
+      const pSkinId = p.skin;
+      const pSkinData = pSkinId && SKINS[p.breed||"shiba"] && SKINS[p.breed||"shiba"].find(s=>s.id===pSkinId);
+      const pEffectId = p.effect;
+      const pEffectData = pEffectId && EFFECTS.find(e=>e.id===pEffectId);
+      
+      let pEffect = null, pEffectType = null;
+      if(pEffectData){
+        pEffect = pEffectData.rarity;
+        pEffectType = pEffectData.effect || "sparkle";
+      }else if(pSkinData && pSkinData.rarity === "epic"){
+        pEffect = "epic";
+        pEffectType = "sparkle";
+      }else if(pSkinData && pSkinData.rarity === "rare"){
+        pEffect = "rare";
+        pEffectType = "paw";
+      }
+      
+      remotes[p.id]={g,breed:p.breed,tx:g.position.x,tz:g.position.z,ry:0,fy:0,skin:p.skin,costume:p.costume,
+        effect:pEffect,effectType:pEffectType,effectT:0,lastPos:g.position.clone()};
     });
   }
   setBaseHp(game.baseHp);
@@ -1411,13 +1806,12 @@ function saveRankEntry(name){
 }
 
 function getTierInfo(pos){
-  // pos は 0始まり
-  if(pos===0)   return {label:"LEGEND",  icon:"👑", cls:"tier-legend"};
-  if(pos<=4)    return {label:"DIAMOND", icon:"💎", cls:"tier-diamond"};
-  if(pos<=9)    return {label:"PLATINUM",icon:"💜", cls:"tier-platinum"};
-  if(pos<=19)   return {label:"GOLD",    icon:"🥇", cls:"tier-gold"};
-  if(pos<=34)   return {label:"SILVER",  icon:"🥈", cls:"tier-silver"};
-  return             {label:"BRONZE",  icon:"🥉", cls:"tier-bronze"};
+  if(pos===0) return {label:"SUPREME",   cls:"tier-supreme",  icon:'<span class="tier-icon tier-icon--supreme"><span class="ti-crown"></span><span class="ti-star"></span><span class="ti-star"></span></span>'};
+  if(pos<=4)  return {label:"ACE HOUND", cls:"tier-ace",      icon:'<span class="tier-icon tier-icon--ace"><span class="ti-bone"></span></span>'};
+  if(pos<=9)  return {label:"VETERAN",   cls:"tier-veteran",  icon:'<span class="tier-icon tier-icon--veteran"><span class="ti-shield"></span></span>'};
+  if(pos<=19) return {label:"GUARD DOG", cls:"tier-guard",    icon:'<span class="tier-icon tier-icon--guard"><span class="ti-paw"></span></span>'};
+  if(pos<=34) return {label:"ROOKIE",    cls:"tier-rookie",   icon:'<span class="tier-icon tier-icon--rookie"><span class="ti-tag"></span></span>'};
+  return            {label:"PUP",       cls:"tier-pup",      icon:'<span class="tier-icon tier-icon--pup"><span class="ti-ball"></span></span>'};
 }
 
 let _rankUnsubscribe=null;
@@ -1487,6 +1881,7 @@ function toMenu(){
   game.state="menu";game.mode="solo";
   Net.leave();
   $("#hud").classList.add("hidden");
+  if(typeof menuShowT!=="undefined")menuShowT=0;
   renderMenu();show("#scrMenu");
   Music.play("menu");
 }
@@ -1494,6 +1889,8 @@ function toMenu(){
 /* ---------- buttons ---------- */
 $("#btnSolo").onclick=()=>{
   try{sfx.click();}catch(e){}
+  if(typeof stopMenuShow==="function")stopMenuShow();
+  if(camera){camera.position.copy(camBase);camera.lookAt(0,0,0);}
   renderPicker("#breedRow","breed",BREEDORDER);
   renderPicker("#stageRow","stage",STAGEORDER);
   renderPicker("#diffRow","diff",DIFFORDER);
@@ -1502,8 +1899,8 @@ $("#btnSolo").onclick=()=>{
 $("#btnSetupBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
 $("#btnSetupGo").onclick=()=>{initAudio();
   beginGame({mode:"solo",breed:sel.breed,stage:sel.stage,diff:sel.diff});};
-$("#btnShop").onclick=()=>{try{sfx.click();}catch(e){}renderShop();show("#scrShop");};
-$("#btnShopBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
+$("#btnShop").onclick=()=>{try{sfx.click();}catch(e){}if(typeof stopMenuShow==="function")stopMenuShow();if(camera){camera.position.copy(camBase);camera.lookAt(0,0,0);}renderShop();show("#scrShop");};
+$("#btnShopBack").onclick=()=>{try{sfx.click();}catch(e){}if(typeof destroySkinPreview==="function")destroySkinPreview();renderMenu();show("#scrMenu");};
 $("#btnSettings").onclick=()=>{
   try{sfx.click();}catch(e){}
   $("#sliderBgm").value=Math.round(_bgmVol*100);
@@ -1628,6 +2025,10 @@ function loop(){
   const rawDt=Math.min(clock.getDelta(),.04);
   if(game.slowT>0){game.slowT-=rawDt;if(game.slowT<=0)game.timeScale=1;}
   const dt=rawDt*game.timeScale;
+  if(game.state==="menu"&&typeof updateMenuShow==="function"){
+    menuShowT+=rawDt;
+    updateMenuShow(menuShowT);
+  }
   if(stageGroup){
     if(stageGroup.userData.flag)stageGroup.userData.flag.rotation.y=.25*Math.sin(clock.elapsedTime*3);
     if(stageGroup.userData.sign)stageGroup.userData.sign.rotation.y+=rawDt*.8;

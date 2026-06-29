@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DOG SQUAD: SQUIRREL SIEGE</title>
-<link rel="stylesheet" href="css/style.css?v=29">
+<link rel="stylesheet" href="css/style.css?v=38">
 </head>
 <body>
 <div id="game"></div>
@@ -166,8 +166,16 @@
 <!-- ============ SHOP ============ -->
 <div id="scrShop" class="scr hidden">
   <div class="panel">
-    <div class="h2" data-i18n="shopTitle">飼い主のショップ — 永続パワーアップ</div>
+    <div class="h2" data-i18n="shopTitle">飼い主のショップ</div>
     <div class="coinrow"><i class="ic coin"></i><span id="shopCoins">0</span> <span data-i18n="coinLabel">ほねコイン</span></div>
+
+    <div class="shopTabs">
+      <button class="shopTab active" data-tab="upgrades" onclick="_shopTab='upgrades';renderShop()">パワーアップ</button>
+      <button class="shopTab" data-tab="skins" onclick="_shopTab='skins';renderShop()">スキン</button>
+      <button class="shopTab" data-tab="costumes" onclick="_shopTab='costumes';renderShop()">コスチューム</button>
+      <button class="shopTab" data-tab="effects" onclick="_shopTab='effects';renderShop()">エフェクト</button>
+    </div>
+
     <div class="shopGrid">
       <div class="shopOwner">
         <div class="ownerArt">
@@ -182,6 +190,20 @@
         <div class="bubble" id="ownerTalk">おかえり！コインで きたえてあげよう。バトル中も ぼくがアイテムを投げ入れるからね！</div>
       </div>
       <div class="upList" id="upList"></div>
+    </div>
+    <!-- Skin shop (shown when skins tab active) -->
+    <div id="skinShopLayout" style="display:none">
+      <div id="skinSaleBar"></div>
+      <div class="skinShopBody">
+        <div class="skinLeftPanel">
+          <div id="skinBreedTabs"></div>
+          <div id="skinCardList"></div>
+        </div>
+        <div class="skinRightPanel">
+          <canvas id="skinPreviewCanvas" width="200" height="240"></canvas>
+          <div id="skinPreviewInfo"></div>
+        </div>
+      </div>
     </div>
     <div style="margin-top:16px"><button class="btn2" id="btnShopBack" data-i18n="btnBack">もどる</button></div>
   </div>
@@ -290,10 +312,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=29"></script>
-<script src="js/audio.js?v=29"></script>
-<script src="js/world.js?v=29"></script>
-<script src="js/net.js?v=29"></script>
-<script src="js/game.js?v=29"></script>
+<script src="js/data.js?v=38"></script>
+<script src="js/audio.js?v=38"></script>
+<script src="js/world.js?v=38"></script>
+<script src="js/net.js?v=38"></script>
+<script src="js/game.js?v=38"></script>
 </body>
 </html>

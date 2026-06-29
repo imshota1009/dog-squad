@@ -222,6 +222,95 @@ const UPS={
 const UPORDER=["pow","rate","bark","speed","house","trap","ally","blast","combo","barkCd"];
 const upCost=(k,lv)=>Math.round(UPS[k].base*Math.pow(lv+1,2.1));
 
+/* ---------- skins ---------- */
+const SKINS={
+  shiba:[
+    {id:"shiba_snow",   label:"snow (雪柴)",    label_en:"Snow",    body:0xf0ede6, chest:0xffffff, band:0x5b8dd9, cost:5000,  rarity:"common"},
+    {id:"shiba_kuro",   label:"kuro (黒柴)",    label_en:"Kuro",    body:0x2d2d2d, chest:0x5a5a5a, band:0xe74c3c, cost:7000,  rarity:"common"},
+    {id:"shiba_sakura", label:"sakura (さくら柴)",label_en:"Sakura", body:0xf9b8c4, chest:0xfde8ea, band:0xff69b4, cost:12000, rarity:"rare"},
+    {id:"shiba_ocean",  label:"ocean (オーシャン)",label_en:"Ocean", body:0x1a4a6b, chest:0x4a8ab0, band:0xffe34d, cost:15000, rarity:"rare"},
+    {id:"shiba_galaxy", label:"galaxy (ギャラクシー)",label_en:"Galaxy",body:0x1a0a3d,chest:0x4a2090,band:0x00ffcc,cost:25000,rarity:"epic"},
+    {id:"shiba_entei",  label:"炎帝 (えんてい)",label_en:"Inferno Emperor",body:0x8b0000,chest:0xff4500,band:0xffd700,cost:30000,rarity:"legendary"},
+  ],
+  golden:[
+    {id:"golden_cream",  label:"cream (クリーム)",  label_en:"Cream",    body:0xfdf5dc, chest:0xffffff, band:0xe74c3c, cost:5000,  rarity:"common"},
+    {id:"golden_choco",  label:"choco (チョコ)",    label_en:"Choco",    body:0x7b4a2d, chest:0xb07d56, band:0x27ae60, cost:8000,  rarity:"common"},
+    {id:"golden_midnight",label:"midnight (ミッドナイト)",label_en:"Midnight",body:0x1a1a2e,chest:0x16213e,band:0xffd700,cost:12000,rarity:"rare"},
+    {id:"golden_rose",   label:"rose (ローズ)",     label_en:"Rose",     body:0xe8a0b4, chest:0xfde8f0, band:0x9b59b6, cost:16000, rarity:"rare"},
+    {id:"golden_aurora", label:"aurora (オーロラ)", label_en:"Aurora",   body:0x0d3b4a, chest:0x1a6b7a, band:0xff6ec7, cost:26000, rarity:"epic"},
+    {id:"golden_angel",  label:"天使 (エンジェル)",label_en:"Angel",    body:0xfff8e7, chest:0xffffff, band:0xffd700, cost:30000, rarity:"legendary"},
+  ],
+  dal:[
+    {id:"dal_night",   label:"night (ナイト版)",  label_en:"Night",    body:0x1e1e2e, chest:0x383860, band:0xff6b6b, cost:5000,  rarity:"common"},
+    {id:"dal_tan",     label:"tan (タン)",        label_en:"Tan",      body:0xd4a574, chest:0xf5e6d3, band:0x2980b9, cost:7000,  rarity:"common"},
+    {id:"dal_gold",    label:"gold (ゴールド版)", label_en:"Gold",     body:0xd4a017, chest:0xffe980, band:0x8e44ad, cost:14000, rarity:"rare"},
+    {id:"dal_neon",    label:"neon (ネオン)",     label_en:"Neon",     body:0x0d0d0d, chest:0x1a1a1a, band:0x39ff14, cost:18000, rarity:"rare"},
+    {id:"dal_prism",   label:"prism (プリズム)",  label_en:"Prism",    body:0x2d0a4e, chest:0x5a1a8a, band:0xff00ff, cost:27000, rarity:"epic"},
+    {id:"dal_phantom", label:"ファントム",       label_en:"Phantom",  body:0x0a0a0a, chest:0x1a1a2e, band:0xcc00ff, cost:30000, rarity:"legendary"},
+  ],
+  corgi:[
+    {id:"corgi_sakura", label:"sakura (さくら)",   label_en:"Sakura",   body:0xf9c6c9, chest:0xfde8ea, band:0xc0392b, cost:5000,  rarity:"common"},
+    {id:"corgi_smoky",  label:"smoky (スモーキー)",label_en:"Smoky",    body:0x8a8a8a, chest:0xd6d6d6, band:0xf39c12, cost:6000,  rarity:"common"},
+    {id:"corgi_mint",   label:"mint (ミント)",     label_en:"Mint",     body:0x7ec8a0, chest:0xc8f0dc, band:0x2c3e50, cost:13000, rarity:"rare"},
+    {id:"corgi_lava",   label:"lava (ラバ)",       label_en:"Lava",     body:0x8b1a1a, chest:0xd44000, band:0xffd700, cost:16000, rarity:"rare"},
+    {id:"corgi_crystal",label:"crystal (クリスタル)",label_en:"Crystal", body:0xa0d8ef, chest:0xe0f4ff, band:0x7b2fff, cost:25000, rarity:"epic"},
+    {id:"corgi_thunder",label:"サンダー",         label_en:"Thunder",  body:0x2c2c5a, chest:0x4a4a8a, band:0xffff00, cost:30000, rarity:"legendary"},
+  ],
+  husky:[
+    {id:"husky_dark",  label:"dark (ダーク)",    label_en:"Dark",     body:0x2c2c2c, chest:0xf2f4f7, band:0x9b59b6, cost:5000,  rarity:"common"},
+    {id:"husky_ember", label:"ember (エンバー)", label_en:"Ember",    body:0xc0392b, chest:0xf5b7b1, band:0xf1c40f, cost:8000,  rarity:"common"},
+    {id:"husky_arctic",label:"arctic (アークティック)",label_en:"Arctic",body:0xe8f4fd,chest:0xffffff,band:0x00bcd4,cost:14000, rarity:"rare"},
+    {id:"husky_storm", label:"storm (ストーム)", label_en:"Storm",    body:0x2c3e50, chest:0x4a6fa5, band:0xe74c3c, cost:17000, rarity:"rare"},
+    {id:"husky_void",  label:"void (ヴォイド)",  label_en:"Void",     body:0x050510, chest:0x0a0a20, band:0x6600ff, cost:28000, rarity:"epic"},
+    {id:"husky_iceking",label:"アイスキング",    label_en:"Ice King", body:0xd0eaff, chest:0xf0f8ff, band:0x00cfff, cost:30000, rarity:"legendary"},
+  ],
+  pug:[
+    {id:"pug_dark",   label:"dark (ブラックパグ)",label_en:"Dark Pug",body:0x1c1c1c, chest:0x3d3d3d, band:0x1abc9c, cost:5000,  rarity:"common"},
+    {id:"pug_pink",   label:"pink (ピンクパグ)", label_en:"Pink Pug", body:0xf4a7b9, chest:0xfde8f0, band:0x9b59b6, cost:7000,  rarity:"common"},
+    {id:"pug_tiger",  label:"tiger (タイガー)",  label_en:"Tiger",    body:0xe8821a, chest:0xffd080, band:0x2c2c2c, cost:13000, rarity:"rare"},
+    {id:"pug_jade",   label:"jade (ジェイド)",   label_en:"Jade",     body:0x0a4a3a, chest:0x1a8a6a, band:0xffe34d, cost:16000, rarity:"rare"},
+    {id:"pug_cosmic", label:"cosmic (コズミック)",label_en:"Cosmic",   body:0x0d0520, chest:0x2a0a50, band:0xff4dff, cost:25000, rarity:"epic"},
+    {id:"pug_emperor",label:"パグ皇帝",         label_en:"Pug Emperor",body:0x4a0a0a,chest:0x8b0000,band:0xffd700,cost:30000, rarity:"legendary"},
+  ],
+};
+
+const COSTUMES=[
+  {id:"flameCape", label:"炎帝のマント", label_en:"Inferno Cape", cost:15000, rarity:"epic", costume:"flameCape", desc:"背中に炎のマントと頭に王冠を装備します。", desc_en:"Equip an inferno cape and golden crown."},
+  {id:"angelWings", label:"天使の翼", label_en:"Angel Wings", cost:20000, rarity:"legendary", costume:"angelWings", desc:"背中に白い翼と頭に光の輪を装備します。", desc_en:"Equip angelic wings and a shining halo."},
+  {id:"phantomCloak", label:"ファントムケープ", label_en:"Phantom Cloak", cost:18000, rarity:"epic", costume:"phantomCloak", desc:"闇のケープと仮面を装備します。", desc_en:"Equip a dark phantom cloak and mask."},
+  {id:"thunderHorns", label:"サンダーホーン", label_en:"Thunder Horns", cost:12000, rarity:"rare", costume:"thunderHorns", desc:"頭に雷のツノを装備します。", desc_en:"Equip lightning horns and band."},
+  {id:"iceCrown", label:"氷雪の王冠", label_en:"Ice Crown", cost:15000, rarity:"epic", costume:"iceCrown", desc:"頭に氷の結晶の王冠を装備します。", desc_en:"Equip an ice crystal crown and shards."},
+  {id:"emperorCrown", label:"皇帝の王冠", label_en:"Emperor Crown", cost:25000, rarity:"legendary", costume:"emperorCrown", desc:"赤い高貴なマントと宝石付きの王冠を装備します。", desc_en:"Equip a royal red cape and jeweled crown."}
+];
+
+const EFFECTS=[
+  {id:"fire", label:"烈火の足跡", label_en:"Fire Trail", cost:10000, rarity:"epic", effect:"fire", desc:"走ると足元から炎が噴き出します。", desc_en:"Spawn fire particles when you move."},
+  {id:"holy", label:"光のオーラ", label_en:"Holy Trail", cost:15000, rarity:"legendary", effect:"holy", desc:"体から聖なる光とキラキラが出ます。", desc_en:"Spawn holy light and sparkles when you move."},
+  {id:"shadow", label:"常闇の霧", label_en:"Shadow Trail", cost:8000, rarity:"rare", effect:"shadow", desc:"足元に紫の闇のモヤが出ます。", desc_en:"Spawn dark shadow mist when you move."},
+  {id:"lightning", label:"迅雷의火花", label_en:"Lightning Trail", cost:12000, rarity:"epic", effect:"lightning", desc:"走ると足元で火花と雷が弾けます。", desc_en:"Spawn electric sparks and bolts when you move."},
+  {id:"frost", label:"永久氷晶", label_en:"Frost Trail", cost:10000, rarity:"epic", effect:"frost", desc:"歩いた後に氷の結晶が舞います。", desc_en:"Spawn freezing ice shards when you move."},
+  {id:"golden", label:"黄金の輝き", label_en:"Golden Trail", cost:20000, rarity:"legendary", effect:"golden", desc:"走ると眩い金の粒子が降り注ぎます。", desc_en:"Spawn sparkling golden dust when you move."}
+];
+
+/* ---------- weekly sale ---------- */
+function getSaleMap(){
+  const week=Math.floor(Date.now()/(7*24*60*60*1000));
+  // collect all skins
+  const all=[];
+  for(const b of BREEDORDER)for(const s of SKINS[b])all.push(s.id);
+  // simple LCG seeded by week
+  let seed=week*1664525+1013904223;
+  const next=()=>{seed=(seed*1664525+1013904223)&0x7fffffff;return seed;};
+  const picked=new Set();
+  while(picked.size<3){
+    const idx=next()%all.length;
+    picked.add(all[Math.abs(idx)]);
+  }
+  const map={};
+  for(const id of picked)map[id]=0.6; // 40% off
+  return map;
+}
+
 /* ---------- owner drop items ---------- */
 const ITEMS={
   meat:  {label:"おにく! 犬小屋かいふく+3", label_en:"Meat! HP +3",       col:0xe17055, dur:0},
@@ -237,13 +326,19 @@ const MUSDEFS={
   menu:{bpm:84, inst:"triangle", drums:false,
     lead:[72,0,76,0,79,0,76,0, 72,0,76,0,81,79,0,0, 71,0,74,0,79,0,74,0, 72,0,76,0,79,0,0,0],
     bass:[48,0,0,0,52,0,0,0, 45,0,0,0,52,0,0,0, 43,0,0,0,50,0,0,0, 48,0,0,0,43,0,0,0]},
-  park:{bpm:138, inst:"square", drums:true,
-    lead:[76,0,76,79,81,0,79,0, 76,0,72,0,74,0,76,0, 77,0,77,81,84,0,81,0, 79,0,76,0,72,0,74,0],
-    bass:[48,48,55,48,53,53,60,53, 48,48,55,48,50,50,57,50, 53,53,60,53,55,55,62,55, 48,48,55,48,43,43,50,43]},
-  beach:{bpm:118, inst:"triangle", drums:true,
-    lead:[79,0,0,77,76,0,72,0, 0,74,0,76,77,0,76,0, 74,0,0,72,71,0,67,0, 0,69,0,71,72,0,0,0],
-    bass:[48,0,55,0,52,0,55,0, 50,0,57,0,53,0,57,0, 43,0,50,0,47,0,50,0, 48,0,55,0,52,0,55,0]},
-  snow:{bpm:96, inst:"sine", drums:true,
-    lead:[69,0,72,0,76,0,72,0, 69,0,71,0,72,0,0,0, 65,0,69,0,72,0,69,0, 64,0,67,0,71,0,0,0],
-    bass:[45,0,0,0,52,0,0,0, 41,0,0,0,48,0,0,0, 38,0,0,0,45,0,0,0, 40,0,0,0,47,0,0,0]}
+  park:{bpm:146, inst:"square", drums:true,
+    lead:[76,79,81,0,84,0,81,79, 76,0,74,76,79,0,76,0, 81,84,86,0,88,0,86,84, 81,0,79,0,76,74,72,0,
+          74,76,79,0,81,0,79,76, 74,0,72,0,74,76,0,0, 79,81,84,0,86,84,81,0, 79,0,76,74,72,0,0,0],
+    bass:[48,48,55,48,53,53,60,53, 48,48,55,48,50,50,57,50, 53,53,60,53,55,55,62,55, 48,48,55,48,43,43,50,43,
+          45,45,52,45,48,48,55,48, 43,43,50,43,48,48,55,48, 53,53,60,53,50,50,57,50, 48,48,55,48,48,48,43,43]},
+  beach:{bpm:112, inst:"triangle", drums:true,
+    lead:[72,0,0,74,76,0,79,0, 81,0,79,0,76,0,74,0, 72,0,0,74,76,0,81,0, 84,0,81,79,76,0,0,0,
+          79,0,0,81,84,0,86,0, 84,0,81,0,79,0,76,0, 74,0,0,72,74,0,76,0, 79,0,76,74,72,0,0,0],
+    bass:[48,0,55,0,48,0,55,0, 52,0,55,0,52,0,55,0, 50,0,57,0,50,0,57,0, 53,0,57,0,53,0,57,0,
+          45,0,52,0,45,0,52,0, 48,0,55,0,48,0,55,0, 50,0,57,0,53,0,57,0, 48,0,55,0,48,0,52,0]},
+  snow:{bpm:88, inst:"sine", drums:true,
+    lead:[72,0,76,0,79,0,84,0, 83,0,79,0,76,0,0,0, 71,0,74,0,79,0,83,0, 84,0,79,0,76,0,0,0,
+          69,0,72,0,76,0,81,0, 79,0,76,0,72,0,0,0, 67,0,71,0,74,0,79,0, 76,0,72,0,69,0,0,0],
+    bass:[48,0,0,52,55,0,0,0, 45,0,0,48,52,0,0,0, 43,0,0,47,50,0,0,0, 48,0,0,52,55,0,0,0,
+          45,0,0,48,52,0,0,0, 48,0,0,52,55,0,0,0, 43,0,0,47,50,0,0,0, 48,0,0,52,48,0,0,0]}
 };
