@@ -75,6 +75,39 @@ Earn Bone Coins from your score and spend them at the Owner's Shop for permanent
 
 ---
 
+## 🐕 Dynamic Difficulty Adjustment (DDA) × Machine Learning Research Project
+
+This repository includes a research and development project for "Dynamic Difficulty Adjustment (DDA)", which automatically shifts the game difficulty in real-time according to the player's performance.
+
+### 1. Collected Data Overview (Phase 1)
+We extracted detailed play session data (189 sessions) from Firebase Firestore and organized them into the following files:
+- [dda_sessions.xlsx](dda_sessions.xlsx) : Spreadsheet for analysis containing upgrades, scores, remaining HP, and stages.
+- [ml/dda_sessions.csv](ml/dda_sessions.csv) : Flat data format used for machine learning.
+
+The variables include selected stage, difficulty, dog breed, win/loss status, remaining HP percentage, and total upgrade levels.
+
+### 2. AI Model Construction (Phase 2)
+We built a neural network model to predict the ideal "difficulty multiplier (0.6x to 1.8x)" for each player, using their recent performance (win rate, average remaining HP%, average normalized score, etc.) from the past 5 sessions.
+- [ml/train_model.js](ml/train_model.js) : Training script to build the model on Node.js and save the model artifacts.
+- [ml/train_dda.py](ml/train_dda.py) : Python code suitable for Google Colab to visualize training progress and prediction accuracy.
+- [ml/model/](ml/model/) : The trained AI "brain files" (`model.json` and `weights.bin`).
+
+#### 📊 AI Training & Validation Results
+Running the script generates the following charts:
+
+<div align="center">
+  <img src="docs/python.png" alt="AI Training Results" width="800">
+</div>
+
+- **Left Plot (Training Progress)**:
+  The prediction error (Loss) decreases steadily as the epoch counts increase, showing that the neural network has successfully learned from the training data.
+- **Right Plot (Prediction Accuracy)**:
+  The red dashed line represents the perfect prediction line. The actual session outcomes (orange dots) cluster tightly around the dashed line, showing high prediction accuracy for recommending the target difficulty.
+
+For Phase 3, we plan to integrate this trained AI model into the game start flow to adaptively scale the enemy stats based on individual players' skill levels.
+
+---
+
 <a name="japanese"></a>
 ## 🇯🇵 日本語
 
