@@ -11,112 +11,6 @@
 ---
 
 <details>
-<summary>🇺🇸 Show English Document (Click to expand)</summary>
-
-<a name="english"></a>
-## 🇺🇸 English
-
-
-A browser-based 3D tower-defense action game built with Three.js and the Web Audio API.
-Defend your doghouse from the acorn-armed squirrel army with your squad of dogs!
-
-<div align="center">
-  <img src="docs/dog_EN.gif" alt="DOG SQUAD gameplay (English)" width="720">
-</div>
-
-### 🎮 How to Play
-
-#### Solo
-Open the game in your browser, choose a stage, difficulty, and dog breed — then charge!
-
-**Controls**
-
-| Action | Key |
-|---|---|
-| Move | WASD / Arrow keys |
-| Aim | Mouse |
-| Bone Missile (arc + blast) | Left Click |
-| Woof Wave (knockback) | SPACE |
-| Pit Trap | E / Right Click |
-
-#### Multiplayer (up to 6 players)
-1. Click **Multiplayer** on the main menu
-2. Host clicks **Create Room** → share the invite URL with friends
-3. Friends open the URL to join automatically
-4. Host clicks **Charge!** to start the game
-
-#### Goal
-Prevent squirrels from reaching the doghouse. Survive all 12 waves without the doghouse HP hitting zero!
-Earn Bone Coins from your score and spend them at the Owner's Shop for permanent upgrades.
-
-### 🐿️ Enemy Types
-| Enemy | Description |
-|---|---|
-| Normal Squirrel | Basic enemy |
-| Scout Squirrel | Fast, zigzag movement |
-| Heavy Squirrel | High HP, slow |
-| Tank Squirrel | Massive HP, huge |
-| Gliding Squirrel | Flies through the air |
-| Boss — King Acorn III | Extremely powerful, appears periodically |
-
-### 🐾 Dog Breeds
-| Breed | Trait |
-|---|---|
-| Shiba Pochi | Balanced all-rounder |
-| Golden Goru | Fast fire rate |
-| Dalmatian Dal | Wide Woof Wave range |
-| Corgi Koro | High movement speed |
-| Husky Haku | Powerful Bone Missiles |
-| Pug Puu | More traps |
-
-### 🛠️ Tech Stack
-- **HTML / CSS** — UI & CSS art (all icons and characters drawn entirely in CSS)
-- **JavaScript** — Game logic & network sync
-- **Three.js** — 3D rendering
-- **Web Audio API** — Real-time BGM & SFX synthesis
-- **Firebase Firestore** — Serverless multiplayer relay
-- **Firebase Hosting** — Game hosting
-
----
-
-## 🐕 Dynamic Difficulty Adjustment (DDA) × Machine Learning Research Project
-
-This repository includes a research and development project for "Dynamic Difficulty Adjustment (DDA)", which automatically shifts the game difficulty in real-time according to the player's performance.
-
-### 1. Collected Data Overview (Phase 1)
-We extracted detailed play session data (189 sessions) from Firebase Firestore and organized them into the following files:
-- [dda_sessions.xlsx](dda_sessions.xlsx) : Spreadsheet for analysis containing upgrades, scores, remaining HP, and stages.
-- [ml/dda_sessions.csv](ml/dda_sessions.csv) : Flat data format used for machine learning.
-
-The variables include selected stage, difficulty, dog breed, win/loss status, remaining HP percentage, and total upgrade levels.
-
-### 2. AI Model Construction (Phase 2)
-We built a neural network model to predict the ideal "difficulty multiplier (0.6x to 1.8x)" for each player, using their recent performance (win rate, average remaining HP%, average normalized score, etc.) from the past 5 sessions.
-- [ml/train_model.js](ml/train_model.js) : Training script to build the model on Node.js and save the model artifacts.
-- [ml/train_dda.py](ml/train_dda.py) : Python code suitable for Google Colab to visualize training progress and prediction accuracy.
-- [ml/model/](ml/model/) : The trained AI "brain files" (`model.json` and `weights.bin`).
-
-#### 📊 AI Training & Validation Results
-Running the script generates the following charts:
-
-<div align="center">
-  <img src="docs/python.png" alt="AI Training Results" width="800">
-</div>
-
-- **Left Plot (Training Progress — AI Learning Progress)**:
-  The prediction error (Loss) decreases smoothly from 0.06 to nearly 0.01 as the training epochs increase. This indicates that the neural network successfully generalized the 189 diverse play sessions without issues like overfitting.
-- **Right Plot (Prediction Accuracy — Target vs AI Predicted)**:
-  The red dashed line represents the ideal prediction (where predicted equals target).
-  * **Accuracy in High-Density Regions**: The data points (orange dots) cluster tightly around the red line, especially near 0.6x (difficulty reduction/safety net for beginners) and 1.0x (standard balance). This proves the AI is highly capable of detecting when to ease up for struggling players or maintain the current level for comfortable players.
-  * **Overall Alignment**: Even for the advanced levels (1.3x to 1.7x), the predicted points closely follow the red target line. This demonstrates that the AI can accurately forecast the optimal multiplier across all player skill tiers to provide a balanced gaming experience.
-
-For Phase 3, we plan to integrate this trained AI model into the game start flow to adaptively scale the enemy stats based on individual players' skill levels.
-
-</details>
-
----
-
-<details>
 <summary>🇯🇵 日本語のドキュメントを表示 (Click to expand)</summary>
 
 <a name="japanese"></a>
@@ -217,5 +111,111 @@ Google Colab等でプログラムを実行した結果、以下のグラフが�
   * **全体的な適合性**: 上級者向けの引き上げ調整（1.3倍〜1.7倍）についても赤いラインの近傍に位置しており、すべてのスキルレベルのプレイヤーに対して「難しすぎず、簡単すぎない」最適な倍率を高い精度で予測できていることが実証されました。
 
 今後は、この保存されたAIの頭脳ファイルをゲームの開始時に読み込ませ、遊ぶ人の実力に応じて敵の強さをリアルタイムに自動調整する仕組み（Phase 3）の実装を進めます。
+
+</details>
+
+---
+
+<details>
+<summary>🇺🇸 Show English Document (Click to expand)</summary>
+
+<a name="english"></a>
+## 🇺🇸 English
+
+
+A browser-based 3D tower-defense action game built with Three.js and the Web Audio API.
+Defend your doghouse from the acorn-armed squirrel army with your squad of dogs!
+
+<div align="center">
+  <img src="docs/dog_EN.gif" alt="DOG SQUAD gameplay (English)" width="720">
+</div>
+
+### 🎮 How to Play
+
+#### Solo
+Open the game in your browser, choose a stage, difficulty, and dog breed — then charge!
+
+**Controls**
+
+| Action | Key |
+|---|---|
+| Move | WASD / Arrow keys |
+| Aim | Mouse |
+| Bone Missile (arc + blast) | Left Click |
+| Woof Wave (knockback) | SPACE |
+| Pit Trap | E / Right Click |
+
+#### Multiplayer (up to 6 players)
+1. Click **Multiplayer** on the main menu
+2. Host clicks **Create Room** → share the invite URL with friends
+3. Friends open the URL to join automatically
+4. Host clicks **Charge!** to start the game
+
+#### Goal
+Prevent squirrels from reaching the doghouse. Survive all 12 waves without the doghouse HP hitting zero!
+Earn Bone Coins from your score and spend them at the Owner's Shop for permanent upgrades.
+
+### 🐿️ Enemy Types
+| Enemy | Description |
+|---|---|
+| Normal Squirrel | Basic enemy |
+| Scout Squirrel | Fast, zigzag movement |
+| Heavy Squirrel | High HP, slow |
+| Tank Squirrel | Massive HP, huge |
+| Gliding Squirrel | Flies through the air |
+| Boss — King Acorn III | Extremely powerful, appears periodically |
+
+### 🐾 Dog Breeds
+| Breed | Trait |
+|---|---|
+| Shiba Pochi | Balanced all-rounder |
+| Golden Goru | Fast fire rate |
+| Dalmatian Dal | Wide Woof Wave range |
+| Corgi Koro | High movement speed |
+| Husky Haku | Powerful Bone Missiles |
+| Pug Puu | More traps |
+
+### 🛠️ Tech Stack
+- **HTML / CSS** — UI & CSS art (all icons and characters drawn entirely in CSS)
+- **JavaScript** — Game logic & network sync
+- **Three.js** — 3D rendering
+- **Web Audio API** — Real-time BGM & SFX synthesis
+- **Firebase Firestore** — Serverless multiplayer relay
+- **Firebase Hosting** — Game hosting
+
+---
+
+## 🐕 Dynamic Difficulty Adjustment (DDA) × Machine Learning Research Project
+
+This repository includes a research and development project for "Dynamic Difficulty Adjustment (DDA)", which automatically shifts the game difficulty in real-time according to the player's performance.
+
+### 1. Collected Data Overview (Phase 1)
+We extracted detailed play session data (189 sessions) from Firebase Firestore and organized them into the following files:
+- [dda_sessions.xlsx](dda_sessions.xlsx) : Spreadsheet for analysis containing upgrades, scores, remaining HP, and stages.
+- [ml/dda_sessions.csv](ml/dda_sessions.csv) : Flat data format used for machine learning.
+
+The variables include selected stage, difficulty, dog breed, win/loss status, remaining HP percentage, and total upgrade levels.
+
+### 2. AI Model Construction (Phase 2)
+We built a neural network model to predict the ideal "difficulty multiplier (0.6x to 1.8x)" for each player, using their recent performance (win rate, average remaining HP%, average normalized score, etc.) from the past 5 sessions.
+- [ml/train_model.js](ml/train_model.js) : Training script to build the model on Node.js and save the model artifacts.
+- [ml/train_dda.py](ml/train_dda.py) : Python code suitable for Google Colab to visualize training progress and prediction accuracy.
+- [ml/model/](ml/model/) : The trained AI "brain files" (`model.json` and `weights.bin`).
+
+#### 📊 AI Training & Validation Results
+Running the script generates the following charts:
+
+<div align="center">
+  <img src="docs/python.png" alt="AI Training Results" width="800">
+</div>
+
+- **Left Plot (Training Progress — AI Learning Progress)**:
+  The prediction error (Loss) decreases smoothly from 0.06 to nearly 0.01 as the training epochs increase. This indicates that the neural network successfully generalized the 189 diverse play sessions without issues like overfitting.
+- **Right Plot (Prediction Accuracy — Target vs AI Predicted)**:
+  The red dashed line represents the ideal prediction (where predicted equals target).
+  * **Accuracy in High-Density Regions**: The data points (orange dots) cluster tightly around the red line, especially near 0.6x (difficulty reduction/safety net for beginners) and 1.0x (standard balance). This proves the AI is highly capable of detecting when to ease up for struggling players or maintain the current level for comfortable players.
+  * **Overall Alignment**: Even for the advanced levels (1.3x to 1.7x), the predicted points closely follow the red target line. This demonstrates that the AI can accurately forecast the optimal multiplier across all player skill tiers to provide a balanced gaming experience.
+
+For Phase 3, we plan to integrate this trained AI model into the game start flow to adaptively scale the enemy stats based on individual players' skill levels.
 
 </details>
