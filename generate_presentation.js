@@ -74,7 +74,7 @@ function addSectionTag(slide, label, color) {
   });
 }
 
-const TOTAL = 7;
+const TOTAL = 8;
 
 // ═══════════════════════════════════════════════════════════════
 // スライド 1: 表紙
@@ -419,64 +419,108 @@ addFooter(s6, 6, TOTAL, false);
 
 
 // ═══════════════════════════════════════════════════════════════
-// スライド 7: 締めくくり — プレイURL + GitHub
+// スライド 7: 使用技術 (TECH STACK)
 // ═══════════════════════════════════════════════════════════════
 let s7 = pptx.addSlide();
-s7.background = { fill: C.dark };
+s7.background = { fill: C.bgAlt };
+addTopBar(s7, C.accentAlt, C.primary);
+addSectionTag(s7, 'TECH STACK', C.accentAlt);
+
+s7.addText('プロジェクトを支える使用技術', {
+  x: 3.0, y: 0.45, w: 9, h: 0.5,
+  fontSize: 22, bold: true, color: C.primary, fontFace: F
+});
+
+// 左側：フロントエンド・ゲームエンジン
+s7.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  x: 0.8, y: 1.4, w: 5.6, h: 4.5, fill: { color: C.white }, rectRadius: 0.1,
+  shadow: { type: 'outer', blur: 4, offset: 1, color: '00000015' }
+});
+s7.addText('🎨 フロントエンド ＆ ゲームエンジン', {
+  x: 1.1, y: 1.6, w: 5.0, h: 0.4,
+  fontSize: 14, bold: true, color: C.primary, fontFace: F
+});
+s7.addText('■ HTML / CSS\nUIやキャラクターアイコンなどをすべてCSSアートで独自描画しています。\n\n■ JavaScript\nゲームのメインロジック、通信処理、AIの推論をブラウザ上で実行します。\n\n■ Three.js\n迫力ある3Dグラフィックスをブラウザ上で軽量にレンダリングします。\n\n■ Web Audio API\nBGMや効果音をリアルタイムにプログラムで合成・再生します。', {
+  x: 1.1, y: 2.2, w: 5.0, h: 3.5,
+  fontSize: 12, color: C.text, fontFace: F, lineSpacing: 18
+});
+
+// 右側：バックエンド・AI・インフラ
+s7.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+  x: 6.8, y: 1.4, w: 5.6, h: 4.5, fill: { color: C.white }, rectRadius: 0.1,
+  shadow: { type: 'outer', blur: 4, offset: 1, color: '00000015' }
+});
+s7.addText('☁️ バックエンド ＆ 機械学習', {
+  x: 7.1, y: 1.6, w: 5.0, h: 0.4,
+  fontSize: 14, bold: true, color: C.primary, fontFace: F
+});
+s7.addText('■ Firebase Firestore\nサーバーを立てずに、プレイヤーの戦績データの保存や、最大6人のリアルタイムオンライン対戦を実現しています。\n\n■ Firebase Hosting\nゲームをインターネットに公開し、誰でもすぐ遊べる環境を提供しています。\n\n■ TensorFlow.js\n学習済みのAI頭脳をブラウザに読み込み、高速に難易度を予測します。\n\n■ Python (Google Colab)\n189件のデータからAIモデルを訓練し、精度をグラフ化・検証しました。', {
+  x: 7.1, y: 2.2, w: 5.0, h: 3.5,
+  fontSize: 12, color: C.text, fontFace: F, lineSpacing: 18
+});
+
+addFooter(s7, 7, TOTAL, false);
+
+
+// ═══════════════════════════════════════════════════════════════
+// スライド 8: 締めくくり — プレイURL + GitHub
+// ═══════════════════════════════════════════════════════════════
+let s8 = pptx.addSlide();
+s8.background = { fill: C.dark };
 
 // 左のアクセントバー
-s7.addShape(pptx.shapes.RECTANGLE, {
+s8.addShape(pptx.shapes.RECTANGLE, {
   x: 0, y: 0, w: 0.12, h: '100%', fill: { color: C.accent }
 });
 
-s7.addText('🎉 ぜひ遊んでみてください！', {
+s8.addText('🎉 ぜひ遊んでみてください！', {
   x: 1.0, y: 0.8, w: 11, h: 0.7,
   fontSize: 30, bold: true, color: C.white, align: 'center', fontFace: F
 });
-s7.addText('AIがあなたの強さを自動で分析し、\nあなた専用の難易度のバトルをお届けします。', {
+s8.addText('AIがあなたの強さを自動で分析し、\nあなた専用の難易度のバトルをお届けします。', {
   x: 1.0, y: 1.6, w: 11, h: 0.7,
   fontSize: 14, color: 'CBD5E1', align: 'center', fontFace: F, lineSpacing: 22
 });
 
 // プレイURLカード
-s7.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+s8.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
   x: 1.5, y: 2.8, w: 10.3, h: 1.3, fill: { color: C.darkSub }, rectRadius: 0.15,
   line: { color: C.green, width: 2 }
 });
-s7.addText('🎮 ゲーム公開URL（ブラウザで即プレイ / スマホ・PC対応）', {
+s8.addText('🎮 ゲーム公開URL（ブラウザで即プレイ / スマホ・PC対応）', {
   x: 1.8, y: 2.85, w: 10, h: 0.4,
   fontSize: 12, color: C.green, fontFace: F, bold: true
 });
-s7.addText('https://dog-squad-game-app.web.app', {
+s8.addText('https://dog-squad-game-app.web.app', {
   x: 1.8, y: 3.3, w: 10, h: 0.6,
   fontSize: 26, bold: true, color: C.white, fontFace: F
 });
 
 // GitHubカード
-s7.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+s8.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
   x: 1.5, y: 4.5, w: 10.3, h: 1.3, fill: { color: C.darkSub }, rectRadius: 0.15,
   line: { color: C.accentAlt, width: 2 }
 });
-s7.addText('📂 GitHubリポジトリ（ソースコード・学習データ・分析結果を公開中！）', {
+s8.addText('📂 GitHubリポジトリ（ソースコード・学習データ・分析結果を公開中！）', {
   x: 1.8, y: 4.55, w: 10, h: 0.4,
   fontSize: 12, color: C.accentAlt, fontFace: F, bold: true
 });
-s7.addText('https://github.com/imshota1009/dog-squad', {
+s8.addText('https://github.com/imshota1009/dog-squad', {
   x: 1.8, y: 5.0, w: 10, h: 0.6,
   fontSize: 22, bold: true, color: C.white, fontFace: F
 });
 
-s7.addText('気になった方はぜひGitHubのリポジトリもご覧ください。\n189件分のプレイデータ・AIモデルの学習プログラム・分析結果がすべて公開されています。', {
+s8.addText('気になった方はぜひGitHubのリポジトリもご覧ください。\n189件分のプレイデータ・AIモデルの学習プログラム・分析結果がすべて公開されています。', {
   x: 1.5, y: 5.9, w: 10.3, h: 0.7,
   fontSize: 11, color: '94A3B8', align: 'center', fontFace: F, lineSpacing: 18
 });
 
-s7.addText(`最終更新日: ${TODAY}`, {
+s8.addText(`最終更新日: ${TODAY}`, {
   x: 1.0, y: 6.8, w: 11, h: 0.3,
   fontSize: 11, color: C.accent, align: 'center', fontFace: F, bold: true
 });
 
-addFooter(s7, 7, TOTAL, true);
+addFooter(s8, 8, TOTAL, true);
 
 
 // ═══════════════════════════════════════════════════════════════
