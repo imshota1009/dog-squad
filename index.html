@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DOG SQUAD: SQUIRREL SIEGE</title>
-<link rel="stylesheet" href="css/style.css?v=38">
+<link rel="stylesheet" href="css/style.css?v=39">
 </head>
 <body>
 <div id="game"></div>
@@ -57,7 +57,7 @@
     <div class="coinrow"><i class="ic coin"></i><span id="menuCoins">0</span> <span data-i18n="coinLabel">ほねコイン</span>　|　<span data-i18n="hiscoreLabel">ハイスコア</span> <span id="menuBest">0</span></div>
     <div class="mainBtns">
       <button class="go" id="btnSolo" data-i18n="btnSolo">ひとりで遊ぶ</button>
-      <button class="go blue" id="btnMulti" disabled style="opacity:.5;cursor:default;box-shadow:0 7px 0 #14478c">みんなで遊ぶ（最大6人）<br><small style="font-size:14px;font-weight:700" id="btnMultiSub">🚧 準備中</small></button>
+      <button class="go" id="btnMulti" style="display:none">みんなで遊ぶ（最大6人）<small id="btnMultiSub">🚧 準備中</small></button>
       <button class="go green" id="btnShop" data-i18n="btnShop">飼い主のショップ</button>
     </div>
     <div style="margin-top:10px;display:flex;gap:10px;justify-content:center">
@@ -249,6 +249,18 @@
   </div>
 </div>
 
+<!-- ============ WEBGL ERROR ============ -->
+<div id="scrWebglError" class="scr hidden">
+  <div class="panel" style="max-width:420px">
+    <div class="h2" style="color:#e05c5c" data-i18n="webglErrorTitle">WebGLエラー</div>
+    <div class="sub" style="font-size:15px;line-height:1.7;margin:16px 0 24px;opacity:.9" data-i18n="webglError">ゲーム画面(WebGL)の初期化に失敗しているため、ゲームを開始できません。ブラウザを再読み込みするか、LINEやDiscordなどのアプリ内ブラウザではなく、ChromeやSafariなどの標準ブラウザで開き直してください。</div>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <button class="btn2" id="btnWebglBack" data-i18n="btnBack">もどる</button>
+      <button class="go" id="btnWebglReload" data-i18n="webglErrorReload">リロード</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ RESULT ============ -->
 <div id="scrResult" class="scr hidden">
   <div class="panel">
@@ -297,6 +309,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -312,10 +325,10 @@
       messagingSenderId: "810449853954"
   });
 </script>
-<script src="js/data.js?v=38"></script>
-<script src="js/audio.js?v=38"></script>
-<script src="js/world.js?v=38"></script>
-<script src="js/net.js?v=38"></script>
-<script src="js/game.js?v=38"></script>
+<script src="js/data.js?v=39"></script>
+<script src="js/audio.js?v=39"></script>
+<script src="js/world.js?v=39"></script>
+<script src="js/net.js?v=39"></script>
+<script src="js/game.js?v=39"></script>
 </body>
 </html>

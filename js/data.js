@@ -60,6 +60,7 @@ const I18N={
     coinUnit:"コイン",
     skillClick:"クリック",skillBark:"わん！",
     webglError:"ゲーム画面(WebGL)の初期化に失敗しているため、ゲームを開始できません。ブラウザを再読み込みするか、LINEやDiscordなどのアプリ内ブラウザではなく、ChromeやSafariなどの標準ブラウザで開き直してください。",
+    webglErrorTitle:"WebGLエラー",webglErrorReload:"リロード",
     lobbyTitle:"みんなで遊ぶ — ルーム",
   },
   en:{
@@ -105,6 +106,7 @@ const I18N={
     coinUnit:"Coins",
     skillClick:"Click",skillBark:"Woof!",
     webglError:"WebGL initialization failed. Please reload the page or open in Chrome/Safari instead of an in-app browser (LINE, Discord, etc).",
+    webglErrorTitle:"WebGL Error",webglErrorReload:"Reload",
     lobbyTitle:"Multiplayer — Room",
   }
 };

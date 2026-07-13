@@ -1,4 +1,20 @@
 "use strict";
+
+/* ---------- DDA Model Preload ---------- */
+let ddaModel = null;
+async function preloadDDAModel() {
+  if (typeof tf === "undefined") {
+    console.warn("TensorFlow.js is not loaded yet.");
+    return;
+  }
+  try {
+    ddaModel = await tf.loadLayersModel('./ml/model/model.json');
+    console.log("DDA Model preloaded successfully.");
+  } catch (e) {
+    console.warn("Preload DDA Model failed (this is normal if running locally for the first time):", e);
+  }
+}
+window.addEventListener('DOMContentLoaded', preloadDDAModel);
 /* =========================================================
    GAME — core logic, UI, progression, multiplayer glue
    ========================================================= */
@@ -450,11 +466,14 @@ function announceW(title,sub,dur=1.4){
 }
 function setWaveHUD(i){
   const maxW=DIFFS[game.diff].maxWave;
+  let text = "WAVE "+i;
   if(maxW>0) {
-    $("#wave").textContent="WAVE "+i+"/"+maxW;
-  } else {
-    $("#wave").textContent="WAVE "+i;
+    text += "/"+maxW;
   }
+  if (game.diffMult && game.diffMult !== 1.0) {
+    text += " (AI: " + game.diffMult.toFixed(2) + "x)";
+  }
+  $("#wave").textContent=text;
 }
 function isEndless(){return DIFFS[game.diff].maxWave===0;}
 function startWave(i){
@@ -507,6 +526,9 @@ function spawnSquirrel(kind){
   g.position.set(Math.cos(a)*R,0,Math.sin(a)*R);
   scene.add(g);
   const k=KINDS[kind],diff=DIFFS[game.diff];
+  
+  const ddaMult = game.diffMult || 1.0;
+  
   let hp=k.hp;
   if (isEndless() && game.wave > 3) {
     hp = Math.round(hp * (1 + (game.wave - 3) * 0.25));
@@ -519,13 +541,20 @@ function spawnSquirrel(kind){
       hp = Math.round(hp * (1 + (game.wave - 3) * 0.3));
     }
   }
+  
+  hp = Math.max(1, Math.round(hp * ddaMult));
+
   let enemySpeed = rnd(k.spd[0],k.spd[1])*diff.spd;
   if (isEndless() && game.wave > 3) {
     enemySpeed = enemySpeed * Math.min(2.0, 1 + (game.wave - 3) * 0.08);
   }
+  enemySpeed = Math.min(18, enemySpeed * ddaMult);
+  
+  const throwMult = 1 / ddaMult;
+
   squirrels.push({id:game.sqId++,g,v:V3(),spin:V3(),state:"run",kind,hp,
     r:k.r,speed:enemySpeed,
-    throwT:rnd(1,2.5)*diff.acorn,hop:rnd(0,6),flyT:0,pitT:0,throwAnim:0,trap:null,
+    throwT:rnd(1,2.5)*diff.acorn*throwMult,hop:rnd(0,6),flyT:0,pitT:0,throwAnim:0,trap:null,
     fy:k.fly||0});
   if(kind==="boss"){
     announceW(icHTML.crown+" "+T("bossAppear"),T("bossAppearSub"),1.6);
@@ -1541,9 +1570,9 @@ Net.handlers.close=()=>{
 /* =========================================================
    GAME FLOW
    ========================================================= */
-function beginGame(cfg){
+async function beginGame(cfg){
   if(!scene){
-    alert(T("webglError"));
+    show("#scrWebglError");
     return;
   }
   if(typeof stopMenuShow==="function")stopMenuShow();
@@ -1552,6 +1581,86 @@ function beginGame(cfg){
   applyLang();
   cleanup();
   game.mode=cfg.mode;game.stage=cfg.stage;game.diff=cfg.diff;
+  
+  // ---- DDA (Dynamic Difficulty Adjustment) Multiplier Prediction ----
+  game.diffMult = 1.0;
+  if (typeof tf !== "undefined" && game.mode === "solo") {
+    try {
+      let ddaHistory = JSON.parse(localStorage.getItem('dog_squad_dda_history') || '[]');
+      let recent = ddaHistory.slice(-5);
+      
+      let avg_hp_pct = 60;
+      let avg_wave_pct = 80;
+      let win_rate = 0.5;
+      let avg_score_norm = 200000;
+      
+      if (recent.length > 0) {
+        let sumHp = 0, sumWave = 0, winCount = 0, sumScore = 0;
+        recent.forEach(s => {
+          sumHp += s.hp_pct;
+          sumWave += s.wave_pct;
+          if (s.win) winCount++;
+          const stageFact = { 'park': 1.0, 'beach': 1.15, 'snow': 1.3 }[s.stage] || 1.0;
+          const diffFact = { 'easy': 0.8, 'normal': 1.0, 'hard': 1.3, 'endless': 1.5 }[s.diff] || 1.0;
+          sumScore += s.score / (stageFact * diffFact);
+        });
+        avg_hp_pct = sumHp / recent.length;
+        avg_wave_pct = sumWave / recent.length;
+        win_rate = winCount / recent.length;
+        avg_score_norm = sumScore / recent.length;
+      }
+      
+      const stageMap = { 'park': 0, 'beach': 1, 'snow': 2 };
+      const diffMap = { 'easy': 0, 'normal': 1, 'hard': 2, 'endless': 3 };
+      const breedMap = { 'shiba': 0, 'golden': 1, 'dal': 2, 'corgi': 3, 'husky': 4, 'pug': 5 };
+      
+      const stageVal = (stageMap[cfg.stage] !== undefined ? stageMap[cfg.stage] : 0) / 2.0;
+      const diffVal = (diffMap[cfg.diff] !== undefined ? diffMap[cfg.diff] : 1) / 3.0;
+      const breedVal = (breedMap[cfg.breed] !== undefined ? breedMap[cfg.breed] : 0) / 5.0;
+      
+      const sc_avg_hp_pct = avg_hp_pct / 100.0;
+      const sc_avg_wave_pct = avg_wave_pct / 100.0;
+      const sc_win_rate = win_rate;
+      const sc_avg_score_norm = Math.min(1.0, avg_score_norm / 1000000.0);
+      
+      let upgradeTotal = 0;
+      if (typeof UPORDER !== "undefined") {
+        UPORDER.forEach(k => {
+          upgradeTotal += upLv(k);
+        });
+      }
+      const sc_upgrade_total = Math.min(1.0, upgradeTotal / 40.0);
+      
+      const inputX = [
+        stageVal,
+        diffVal,
+        breedVal,
+        sc_avg_hp_pct,
+        sc_avg_wave_pct,
+        sc_win_rate,
+        sc_avg_score_norm,
+        sc_upgrade_total
+      ];
+      
+      let model = ddaModel;
+      if (!model) {
+        model = await tf.loadLayersModel('./ml/model/model.json').catch(() => null);
+      }
+      if (model) {
+        const xs = tf.tensor2d([inputX]);
+        const ys = model.predict(xs);
+        const normalizedY = ys.dataSync()[0];
+        let val = normalizedY * 1.2 + 0.6; // Scale [0,1] to [0.6, 1.8]
+        game.diffMult = Math.max(0.6, Math.min(1.8, val));
+        xs.dispose();
+        ys.dispose();
+        console.log("DDA active! Predicted difficulty multiplier:", game.diffMult);
+      }
+    } catch (e) {
+      console.warn("DDA multiplier calculation error:", e);
+    }
+  }
+
   game.state="play";game.time=0;game.score=0;game.wave=0;game.kills=0;game._quitReason=null;game._noCoins=false;
   $("#menuBtn").classList.remove("hidden");
   game.maxCombo=0;game.combo=0;game.comboT=0;game.timeScale=1;game.slowT=0;
@@ -1698,10 +1807,37 @@ function isQualifiedSession(stats){
 
 function saveDDASession(win,stats,rank,coins){
   if(!isQualifiedSession(stats)) return; // skip low-quality sessions
+  
+  const hpPct=game.baseMax>0?Math.round(stats.hp/game.baseMax*100):0;
+  const waveMax=DIFFS[game.diff].maxWave||99;
+  const upgradeTotal = Object.values(SAVE.up||{}).reduce((s,v)=>s+(v||0),0);
+  const wavePct = Math.round(game.wave/waveMax*100);
+
+  // 1. Save to local storage for DDA input (last 10 sessions)
+  try {
+    let ddaHistory = JSON.parse(localStorage.getItem('dog_squad_dda_history') || '[]');
+    ddaHistory.push({
+      win: win,
+      hp_pct: hpPct,
+      wave_pct: wavePct,
+      score: stats.sc,
+      stage: game.stage,
+      diff: game.diff,
+      breed: game.breed || sel.breed || "shiba",
+      upgrade_total: upgradeTotal,
+      ts: new Date().toISOString()
+    });
+    if (ddaHistory.length > 10) {
+      ddaHistory = ddaHistory.slice(-10);
+    }
+    localStorage.setItem('dog_squad_dda_history', JSON.stringify(ddaHistory));
+  } catch(e) {
+    console.error("Local DDA save error:", e);
+  }
+
+  // 2. Send to Firestore database
   try{
     const db=firebase.firestore();
-    const hpPct=game.baseMax>0?Math.round(stats.hp/game.baseMax*100):0;
-    const waveMax=DIFFS[game.diff].maxWave||99;
     const doc={
       // ---- game context ----
       stage:game.stage,
@@ -1713,7 +1849,7 @@ function saveDDASession(win,stats,rank,coins){
       rank:rank,
       wave_reached:game.wave,
       wave_max:waveMax,
-      wave_pct:Math.round(game.wave/waveMax*100),
+      wave_pct:wavePct,
       // ---- performance ----
       score:stats.sc,
       kills:stats.kills,
@@ -1724,7 +1860,7 @@ function saveDDASession(win,stats,rank,coins){
       coins_earned:coins,
       // ---- shop upgrades (so ML can account for player power level) ----
       upgrades: Object.assign({}, SAVE.up||{}),
-      upgrade_total: Object.values(SAVE.up||{}).reduce((s,v)=>s+(v||0),0),
+      upgrade_total: upgradeTotal,
       // ---- quit reason (null = natural game over) ----
       quit_reason: win ? null : (game._quitReason || "gameover"),
       // ---- meta ----
@@ -1897,6 +2033,8 @@ $("#btnSolo").onclick=()=>{
   show("#scrSetup");
 };
 $("#btnSetupBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
+$("#btnWebglBack").onclick=()=>{try{sfx.click();}catch(e){}renderMenu();show("#scrMenu");};
+$("#btnWebglReload").onclick=()=>{location.reload();};
 $("#btnSetupGo").onclick=()=>{initAudio();
   beginGame({mode:"solo",breed:sel.breed,stage:sel.stage,diff:sel.diff});};
 $("#btnShop").onclick=()=>{try{sfx.click();}catch(e){}if(typeof stopMenuShow==="function")stopMenuShow();if(camera){camera.position.copy(camBase);camera.lookAt(0,0,0);}renderShop();show("#scrShop");};
@@ -2038,7 +2176,7 @@ function loop(){
       ownerRig.userData.wave.rotation.z=.6+Math.sin(clock.elapsedTime*14)*.5;}
     else ownerRig.userData.wave.rotation.z=.3;
   }
-  reticle.visible=retDot.visible=(game.state==="play");
+  if(reticle&&retDot)reticle.visible=retDot.visible=(game.state==="play");
   if(game.state==="play"){
     game.time+=dt;
     $("#timer").textContent=game.time.toFixed(1)+" s";

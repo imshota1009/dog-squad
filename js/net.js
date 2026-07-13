@@ -155,14 +155,14 @@ const Net = {
   },
 
   _evQueue: [],
-  _snap: null,
+  _snaps: {},
   _pin: null,
   _sendTimer: null,
   game(d) {
     if (!this.code || !this.myPlayerId) return;
     if (d.t === "snap") {
       // Firestore does not support nested arrays; serialize sq as a JSON string
-      this._snap = { t: d.t, sq: JSON.stringify(d.sq), hp: d.hp, sc: d.sc, wv: d.wv, tm: d.tm };
+      this._snaps[d.id || "main"] = { t: d.t, sq: JSON.stringify(d.sq), hp: d.hp, sc: d.sc, wv: d.wv, tm: d.tm, id: d.id };
     }
     else if (d.t === "pin") this._pin = d;
     else this._evQueue.push(d);
@@ -175,7 +175,7 @@ const Net = {
         const data = {
           t: "merged",
           from: this.id,
-          snap: this._snap,
+          snaps: Object.values(this._snaps),
           pin: this._pin,
           evs: this._evQueue,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -183,7 +183,7 @@ const Net = {
         docRef.set(data).catch(err => {
           console.error("relay write failed:", err);
         });
-        this._snap = null;
+        this._snaps = {};
         this._pin = null;
         this._evQueue = [];
       }, 100);
